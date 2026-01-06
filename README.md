@@ -1,5 +1,7 @@
 # Habit Tracker
 
+> **Workshop participants:** For the template and starting point, switch to the [`workshop`](https://github.com/coleam00/habit-tracker/tree/workshop) branch.
+
 A personal habit tracking web application for building and maintaining daily habits through streak tracking, completion rates, and calendar visualization. Built with FastAPI (Python) backend and React frontend, this local-first application runs entirely on your machine with no account required—just simple, distraction-free habit tracking.
 
 ## Prerequisites
@@ -104,7 +106,9 @@ Full API documentation available at http://localhost:8000/docs when backend is r
 
 ## Claude Commands
 
-Slash commands for Claude Code to assist with development workflows.
+Slash commands for Claude Code to assist with development workflows. The AI coding workflow used to build this application follows the PIV (Prime, Implement, Validate) loop shown below:
+
+![PIV Loop Diagram](PIVLoopDiagram.png)
 
 ### Planning & Execution
 | Command | Description |

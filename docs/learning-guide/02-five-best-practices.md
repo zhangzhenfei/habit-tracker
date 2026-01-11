@@ -20,9 +20,18 @@ AI 的记忆是短暂的，但文档是永恒的。如果你只在聊天中告�
 
 ### 👀 场景演示 (Try it out)
 **任务**：你想把应用的主题色从绿色改成蓝色。
-**❌ 弱指令**："把颜色改成蓝色。" (AI 可能会直接去改 CSS 代码，跳过文档)
+
+**❌ 弱指令**：
+```
+把颜色改成蓝色
+```
+(AI 可能会直接去改 CSS 代码，跳过文档)
+
 **✅ 强指令**：
-> "Read `.claude/PRD.md`. I want to change the primary brand color to Blue. **Do not update any code yet.** Please only update the 'Design' section in the PRD file first."
+```
+Read .claude/PRD.md
+我想把主题色改成蓝色，请先更新 PRD 的设计部分，不要改代码
+```
 
 ---
 
@@ -47,29 +56,43 @@ AI 的上下文窗口（Context Window）是有限且昂贵的。如果你每次
 
 ### 👀 场景演示 (Try it out)
 **任务**：你需要修改数据库表结构。
+
 **指令**：
-> "Read `.claude/reference/sqlite-best-practices.md`. I need to add a `created_at` column to the `users` table. Please write the SQL command following the guidelines."
-*(注意观察：AI 会根据参考文档，自动加上 `DEFAULT CURRENT_TIMESTAMP`，而不是写一个裸的 SQL)*
+```
+Read .claude/reference/sqlite-best-practices.md
+我需要给 users 表添加 created_at 字段，请按规范写 SQL
+```
+*(AI 会根据参考文档，自动加上 `DEFAULT CURRENT_TIMESTAMP`)*
 
 ---
 
-## 3. 命令化一切 (Command-ify Everything)
+## 3. Skills 化一切 (Skill-ify Everything)
 
-> **原则**：把重复的复杂流程固化为命令。
+> **原则**：把重复的复杂流程固化为 Skills（斜杠命令）。
 
 **为什么？**
 "修复一个 Bug"通常涉及：查日志 -> 复现 -> 定位 -> 修复 -> 测试。每次都手把手教 AI 做这5步很累。
 
 **如何做？**
-- 在 `.claude/commands/` 下创建 Markdown 文件定义流程。
-- 例如 `.claude/commands/github_bug_fix/rca.md` 定义了"根本原因分析"的步骤。
-- 以后只需说："运行 RCA 流程"，AI 就会乖乖照做。
+- 在 `.claude/commands/` 下创建 Markdown 文件定义流程
+- 使用 `/skill-name` 语法直接调用
+- 本项目已内置多个 Skills
 
 ### 👀 场景演示 (Try it out)
 **任务**：你要提交代码。
+
 **指令**：
-> "Run the `/commit` command."
-*(AI 会自动执行 `.claude/commands/commit.md` 中的步骤：先 git status，再 git diff，最后生成符合 Angular 规范的 commit message)*
+```
+/commit
+```
+AI 会自动：git status → git diff → 生成规范的 commit message → 提交
+
+**更多内置 Skills**：
+```bash
+/validation:validate      # 运行完整验证
+/core_piv_loop:prime      # 加载项目上下文
+/github_bug_fix:rca 123   # 分析 Bug 根因
+```
 
 ---
 
@@ -89,14 +112,20 @@ AI 的上下文窗口（Context Window）是有限且昂贵的。如果你每次
 
 ### 👀 场景演示 (Try it out)
 **场景**：你刚和 AI 讨论完一个复杂功能的计划，对话已经进行了 30 轮。
+
 **动作**：
-1. 输入 `/clear` (或重启 Claude)。
-2. **新对话指令**：
-> "Read `.agents/plans/new-feature.md`. I want to start the execution phase. Please implement step 1."
+```bash
+# 会话 1: 规划
+/core_piv_loop:plan-feature 复杂功能
+# 计划创建后
+
+# 使用 /clear 清理上下文
+
+# 会话 2: 执行（干净的上下文）
+/core_piv_loop:execute .agents/plans/xxx.md
+```
 
 ---
-
-## 5. 系统演进思维 (System Evolution Mindset)
 
 ## 5. 系统演进思维 (System Evolution Mindset)
 

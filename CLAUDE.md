@@ -1,177 +1,125 @@
-# Habit Tracker
+# 习惯追踪器
 
-A personal habit tracking web application with streak tracking and completion rate metrics.
+个人习惯追踪应用，支持连续打卡统计和完成率指标。
 
-## Tech Stack
+## 技术栈
 
-- **Backend**: Python 3.11+, FastAPI, SQLAlchemy, SQLite, structlog
-- **Frontend**: React 18, Vite, Tailwind CSS, TanStack Query
-- **Testing**: pytest, Vitest, Playwright
-- **No authentication** - local single-user application
+- **后端**: Python 3.11+, FastAPI, SQLAlchemy, SQLite, structlog
+- **前端**: React 18, Vite, Tailwind CSS, TanStack Query
+- **测试**: pytest, Vitest, Playwright
+- **无需认证** - 本地单用户应用
 
-## Project Structure
+## 项目结构
 
 ```
 habit-tracker/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py           # FastAPI entry point
-│   │   ├── database.py       # SQLite connection
-│   │   ├── models.py         # SQLAlchemy models
-│   │   ├── schemas.py        # Pydantic schemas
-│   │   ├── logging_config.py # structlog configuration
-│   │   └── routers/          # API endpoints
+│   │   ├── main.py           # FastAPI 入口
+│   │   ├── database.py       # SQLite 连接
+│   │   ├── models.py         # SQLAlchemy 模型
+│   │   ├── schemas.py        # Pydantic 模式
+│   │   ├── logging_config.py # 日志配置
+│   │   └── routers/          # API 路由
 │   └── pyproject.toml
 ├── frontend/
 │   ├── src/
-│   │   ├── components/       # React components
-│   │   ├── features/         # Feature modules
-│   │   ├── api/              # API client
+│   │   ├── components/       # React 组件
+│   │   ├── features/         # 功能模块
+│   │   ├── api/              # API 客户端
 │   │   └── App.jsx
 │   └── package.json
 ├── tests/
-│   ├── unit/                 # Unit tests
-│   ├── integration/          # API integration tests
-│   └── e2e/                  # Playwright E2E tests
+│   ├── unit/                 # 单元测试
+│   ├── integration/          # 集成测试
+│   └── e2e/                  # E2E 测试
 └── .claude/
-    ├── PRD.md                # Product requirements
-    ├── reference/            # Best practices docs
-    └── commands/             # Custom Claude Code commands
-        ├── commit.md         # Git commit workflow
-        ├── core_piv_loop/    # Plan-Implement-Validate loop
-        ├── github_bug_fix/   # Bug fix workflow
-        └── validation/       # Code review & validation
+    ├── PRD.md                # 产品需求文档
+    ├── reference/            # 最佳实践文档
+    └── commands/             # 自定义命令
 ```
 
-## Commands
+## 常用命令
 
 ```bash
-# Backend
+# 后端
 cd backend && uv sync
 uv run uvicorn app.main:app --reload --port 8000
 
-# Frontend
+# 前端
 cd frontend && npm install && npm run dev
 
-# Testing (Backend)
-cd backend
-uv run pytest tests/test_streak.py -v        # Unit tests
-uv run pytest tests/ -v                       # All tests
-uv run pytest --cov=app                       # With coverage
-
-# Testing (Frontend)
-npx playwright test                           # E2E tests
+# 测试
+uv run pytest tests/ -v       # 全部测试
+npx playwright test           # E2E 测试
 ```
 
-## MCP Servers
+## MCP 服务
 
-**Playwright MCP** is available for browser automation and E2E testing:
+**Playwright MCP** 用于浏览器自动化和 E2E 测试：
 ```bash
 claude mcp add playwright npx @playwright/mcp@latest
 ```
 
-Use Playwright MCP for:
-- Running and debugging E2E tests
-- Visual regression testing
-- Browser automation tasks
+## 参考文档
 
-## Reference Documentation
+| 文档 | 用途 |
+|------|------|
+| `.claude/PRD.md` | 需求、功能、API 规范 |
+| `fastapi-best-practices.md` | API 开发 |
+| `sqlite-best-practices.md` | 数据库设计 |
+| `react-frontend-best-practices.md` | 前端开发 |
+| `testing-and-logging.md` | 测试与日志 |
 
-Read these documents when working on specific areas:
+## 代码规范
 
-| Document | When to Read |
-|----------|--------------|
-| `.claude/PRD.md` | Understanding requirements, features, API spec |
-| `.claude/reference/fastapi-best-practices.md` | Building API endpoints, Pydantic schemas, dependencies |
-| `.claude/reference/sqlite-best-practices.md` | Database schema, queries, SQLAlchemy patterns |
-| `.claude/reference/react-frontend-best-practices.md` | Components, hooks, state management, forms |
-| `.claude/reference/testing-and-logging.md` | structlog setup, unit/integration/E2E testing patterns |
-| `.claude/reference/deployment-best-practices.md` | Docker, production builds, deployment |
-| `.claude/reference/claude-commands-guide.md` | Creating and using custom Claude Code commands |
+### 后端 (Python)
+- 所有请求/响应使用 Pydantic 模式
+- 分离模式：`HabitCreate`, `HabitUpdate`, `HabitResponse`
+- 使用 `Depends()` 注入数据库会话
+- 日期存储为 ISO-8601 格式 (`YYYY-MM-DD`)
 
-## Code Conventions
+### 前端 (React)
+- 功能模块化目录结构 `src/features/`
+- 使用 TanStack Query 获取数据
+- Tailwind CSS 样式
+- react-hook-form + Zod 表单验证
 
-### Backend (Python)
-- Use Pydantic models for all request/response schemas
-- Separate schemas: `HabitCreate`, `HabitUpdate`, `HabitResponse`
-- Use `Depends()` for database sessions and validation
-- Store dates as ISO-8601 TEXT in SQLite (`YYYY-MM-DD`)
-- Enable foreign keys via PRAGMA on every connection
+### API 设计
+- RESTful 端点位于 `/api/`
+- POST 返回 201，DELETE 返回 204
 
-### Frontend (React)
-- Feature-based folder structure under `src/features/`
-- Use TanStack Query for all API calls (no raw useEffect fetching)
-- Tailwind CSS for styling - no separate CSS files
-- Forms with react-hook-form + Zod validation
+## 日志
 
-### API Design
-- RESTful endpoints under `/api/`
-- Return 201 for POST, 204 for DELETE
-- Use HTTPException with descriptive error codes
-
-## Logging
-
-Use **structlog** for all logging. Configure at app startup:
-- Development: Pretty console output with colors
-- Production: JSON format for log aggregation
+使用 **structlog** 记录日志：
 
 ```python
 import structlog
 logger = structlog.get_logger()
-
-# Bind context for all subsequent logs
-structlog.contextvars.bind_contextvars(request_id=request_id)
-
-# Log with structured data
 logger.info("Habit completed", habit_id=1, streak=5)
 ```
 
-Request logging middleware automatically logs:
-- Request ID, method, path
-- Response status code and duration
+## 数据库
 
-## Database
+SQLite WAL 模式，两张表：`habits` 和 `completions`。
 
-SQLite with WAL mode. Always run these PRAGMAs on connection:
+连接时执行：
 ```sql
 PRAGMA journal_mode=WAL;
 PRAGMA foreign_keys=ON;
-PRAGMA synchronous=NORMAL;
 ```
 
-Two tables: `habits` and `completions`. See `.claude/PRD.md` for schema.
+## 测试策略
 
-## Testing Strategy
+- **70% 单元测试**: 业务逻辑、验证器
+- **20% 集成测试**: API 端点
+- **10% E2E 测试**: 关键用户流程
 
-### Testing Pyramid
-- **70% Unit tests**: Pure functions, business logic, validators
-- **20% Integration tests**: API endpoints with real database
-- **10% E2E tests**: Critical user journeys with Playwright
-
-### Unit Tests
-- Test streak calculation, date utilities, validators
-- Mock external dependencies
-- Fast execution (milliseconds)
-
-### Integration Tests
-- Test API endpoints with in-memory SQLite
-- Use `TestClient` and dependency overrides
-- Test success and error cases
-
-### E2E Tests
-- Use Playwright with Page Object Model
-- Test critical flows: create habit, complete habit, view calendar
-- Run visual regression tests for UI consistency
-
-### Test Organization
+### 测试目录
 ```
 tests/
-├── conftest.py              # Shared fixtures
-├── unit/
-│   └── test_streak.py       # Business logic tests
-├── integration/
-│   └── test_api_habits.py   # API tests with real DB
-└── e2e/
-    ├── pages/               # Page objects
-    └── habits.spec.js       # User journey tests
+├── conftest.py              # 共享 fixtures
+├── unit/                    # 单元测试
+├── integration/             # 集成测试
+└── e2e/                     # E2E 测试
 ```

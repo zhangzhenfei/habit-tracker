@@ -34,10 +34,23 @@ habit-tracker/
 - **作用**：真理的唯一来源 (Single Source of Truth)。
 - **规则**：如果代码和 PRD 冲突，**以 PRD 为准**（或者更新 PRD）。永远不要在没有更新 PRD 的情况下修改核心功能。
 
-### `commands/`
-- **作用**：存放结构化的 Prompt 模板。
-- **例子**：`commands/core_piv_loop/plan-feature.md`
-    - 这是一个 Markdown 文件，但对 AI 来说，它是一段脚本。它告诉 AI："第一步读什么，第二步思考什么，第三步输出什么"。
+### `commands/` - Skills 定义
+
+- **作用**：存放结构化的 Prompt 模板，可通过 `/skill-name` 直接调用
+- **调用方式**：使用斜杠命令语法
+
+**本项目内置 Skills**：
+
+| Skill 命令 | 文件位置 | 用途 |
+|-----------|---------|------|
+| `/commit` | `commands/commit.md` | 自动生成规范提交 |
+| `/init-project` | `commands/init-project.md` | 初始化项目环境 |
+| `/core_piv_loop:prime` | `commands/core_piv_loop/prime.md` | 加载项目上下文 |
+| `/core_piv_loop:plan-feature` | `commands/core_piv_loop/plan-feature.md` | 创建实现计划 |
+| `/core_piv_loop:execute` | `commands/core_piv_loop/execute.md` | 执行计划 |
+| `/github_bug_fix:rca` | `commands/github_bug_fix/rca.md` | Bug 根因分析 |
+| `/validation:validate` | `commands/validation/validate.md` | 完整验证 |
+| `/validation:code-review` | `commands/validation/code-review.md` | 代码审查 |
 
 ### `reference/` - 技术规范库 (按需加载)
 
@@ -139,37 +152,48 @@ As a user, I want to toggle dark mode so that my eyes don't hurt at night.
 - [ ] Refresh page -> check preference is persisted
 ```
 
-## 3. `commands/` - 标准作业程序 (SOP)
+## 3. `commands/` - Skills 系统详解
 
-这些文件是 AI 的"技能书"。
+Skills 是可复用的自动化流程，通过 `/skill-name` 语法调用。
 
-#### 📄 命令文件模板示例 (Command Template)
-如何教 AI "如何修复 Bug"？
+### 如何使用 Skills
+
+```bash
+# 简单 skill
+/commit
+
+# 带参数的 skill
+/core_piv_loop:plan-feature 添加用户认证功能
+
+# 带路径参数的 skill
+/core_piv_loop:execute .agents/plans/auth-feature.md
+```
+
+### 如何创建自定义 Skill
+
+在 `.claude/commands/` 下创建 Markdown 文件：
 
 ```markdown
-# Command: Fix Bug (RCA First)
+---
+description: 简短描述
+argument-hint: [参数提示]
+---
 
-## Objective
-Fix a reported bug by first identifying the root cause.
+# Skill 名称
 
-## Steps
+## 目标
+描述这个 skill 要完成什么
 
-1. **Reproduction**
-   - Ask user for reproduction steps.
-   - Create a test case that fails.
-
-2. **Analysis**
-   - Read relevant code.
-   - Add logging if necessary.
-   - Identify the root cause.
-
-3. **Fix**
-   - Apply the fix.
-   - Run the test case again (It should pass now).
-
-4. **Cleanup**
-   - Remove temporary logs.
+## 步骤
+1. 第一步
+2. 第二步
+3. ...
 ```
+
+**示例**：创建代码风格检查 skill
+
+文件：`.claude/commands/maintenance/check-style.md`
+调用：`/maintenance:check-style`
 
 ## 4. `backend/` & `frontend/` - 代码实现
 

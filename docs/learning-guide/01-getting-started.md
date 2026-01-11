@@ -111,7 +111,7 @@ Claude Code 可以使用多种工具:
 | Skill | 用途 |
 |-------|------|
 | `/core_piv_loop:prime` | 加载项目上下文，理解代码库 |
-| `/core_piv_loop:plan-feature <描述>` | 创建功能实现计划 |
+| `/core_piv_loop:plan-feature <描述>` | 需求澄清 → 更新PRD → 生成实施计划（一键完成） |
 | `/core_piv_loop:execute <计划路径>` | 执行实现计划 |
 
 **Bug 修复 Skills**：
@@ -134,7 +134,7 @@ Claude Code 可以使用多种工具:
 🤖 Claude 会分析变更，生成 commit message 并创建提交
 
 👤 /core_piv_loop:plan-feature 添加用户认证
-🤖 Claude 会创建详细的实现计划
+🤖 Claude 会与你交互澄清需求，更新PRD，然后生成详细的实施计划
 ```
 
 ## 实战演示:第一个任务

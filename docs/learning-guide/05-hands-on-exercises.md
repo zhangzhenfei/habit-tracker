@@ -11,7 +11,7 @@
 | `/commit` | 自动生成规范的 git commit |
 | `/init-project` | 初始化项目（安装依赖、启动服务） |
 | `/core_piv_loop:prime` | 加载项目上下文，理解代码库 |
-| `/core_piv_loop:plan-feature <描述>` | 创建功能实现计划 |
+| `/core_piv_loop:plan-feature <描述>` | 需求澄清→更新PRD→生成实施计划 |
 | `/core_piv_loop:execute <计划路径>` | 执行实现计划 |
 | `/github_bug_fix:rca <issue-id>` | 分析 GitHub issue 根本原因 |
 | `/github_bug_fix:implement-fix <issue-id>` | 根据 RCA 实现修复 |

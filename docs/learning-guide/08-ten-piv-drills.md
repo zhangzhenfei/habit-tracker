@@ -11,19 +11,25 @@
 
 ## 🟢 Level 1: 热身与文档 (Warm-up)
 
-### 练习 1: 修改 PRD
+### 练习 1: 需求到计划（一键完成）
 **场景**：决定给习惯增加一个"优先级"属性。
-**目标**：仅更新文档，不写代码。
+**目标**：体验完整的需求澄清 → PRD更新 → 计划生成流程。
 
 ```bash
 # 1. 加载上下文
 /core_piv_loop:prime
 
-# 2. 告诉 AI 你的需求，让它更新 PRD
-我想给习惯添加优先级字段，请更新 PRD 的数据模型部分
+# 2. 一键完成需求到计划
+/core_piv_loop:plan-feature 给习惯添加优先级字段
+
+# AI 会自动：
+# - 与你交互澄清需求（高/中/低？必填？）
+# - 更新 .claude/PRD.md
+# - 生成实施计划到 .agents/plans/
 
 # 3. 验证
-Read .claude/PRD.md 确认更改
+Read .claude/PRD.md 确认PRD已更新
+Read .agents/plans/add-priority-field.md 审查计划
 ```
 
 ### 练习 2: 增加 Reference 规则

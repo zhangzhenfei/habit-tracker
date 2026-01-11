@@ -46,7 +46,7 @@ habit-tracker/
 | `/commit` | `commands/commit.md` | 自动生成规范提交 |
 | `/init-project` | `commands/init-project.md` | 初始化项目环境 |
 | `/core_piv_loop:prime` | `commands/core_piv_loop/prime.md` | 加载项目上下文 |
-| `/core_piv_loop:plan-feature` | `commands/core_piv_loop/plan-feature.md` | 创建实现计划 |
+| `/core_piv_loop:plan-feature` | `commands/core_piv_loop/plan-feature.md` | 需求澄清→更新PRD→生成实施计划 |
 | `/core_piv_loop:execute` | `commands/core_piv_loop/execute.md` | 执行计划 |
 | `/github_bug_fix:rca` | `commands/github_bug_fix/rca.md` | Bug 根因分析 |
 | `/validation:validate` | `commands/validation/validate.md` | 完整验证 |

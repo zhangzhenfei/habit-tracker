@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { Check, Flame, TrendingUp, ChevronDown, ChevronUp, Pencil, Trash2, X } from 'lucide-react';
+import * as Icons from 'lucide-react';
 import clsx from 'clsx';
 import { Card } from '../../../components/ui/Card';
 import { useCompleteHabit, useUncompleteHabit, useDeleteHabit } from '../hooks/useHabits';
@@ -19,6 +20,9 @@ export function HabitCard({ habit }) {
 
   const today = format(new Date(), 'yyyy-MM-dd');
   const isPending = isCompleting || isUncompleting;
+
+  // Get icon component if icon name is provided
+  const HabitIcon = habit.icon && Icons[habit.icon] ? Icons[habit.icon] : null;
 
   const handleToggle = () => {
     if (habit.completed_today) {
@@ -40,9 +44,14 @@ export function HabitCard({ habit }) {
         <div className="flex-1 p-4">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 truncate">
-                {habit.name}
-              </h3>
+              <div className="flex items-center gap-2">
+                {HabitIcon && (
+                  <HabitIcon className="w-5 h-5 flex-shrink-0" style={{ color: habit.color }} />
+                )}
+                <h3 className="font-semibold text-gray-900 truncate">
+                  {habit.name}
+                </h3>
+              </div>
               {habit.description && (
                 <p className="text-sm text-gray-500 mt-1 line-clamp-2">
                   {habit.description}

@@ -143,6 +143,7 @@ def build_habit_response(habit: Habit, today: date | None = None) -> HabitRespon
         name=habit.name,
         description=habit.description,
         color=habit.color,
+        icon=habit.icon,
         current_streak=calculate_streak(completions, today),
         longest_streak=calculate_longest_streak(completions),
         completion_rate=calculate_completion_rate(habit, completions, today),
@@ -178,6 +179,7 @@ def create_habit(
         name=habit_data.name,
         description=habit_data.description,
         color=habit_data.color,
+        icon=habit_data.icon,
         created_at=datetime.now().isoformat(timespec="seconds"),
     )
     db.add(habit)

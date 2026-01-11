@@ -13,6 +13,7 @@ class Habit(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(String(500))
     color: Mapped[str] = mapped_column(String(7), default="#10B981")
+    icon: Mapped[str | None] = mapped_column(String(50))
     created_at: Mapped[str] = mapped_column(String(19), nullable=False)  # ISO datetime
     archived_at: Mapped[str | None] = mapped_column(String(19))  # ISO datetime
 

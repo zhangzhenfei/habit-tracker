@@ -14,6 +14,7 @@ class HabitCreate(HabitBase):
     """Schema for creating a new habit."""
 
     color: str = Field(default="#10B981", pattern=r"^#[0-9A-Fa-f]{6}$")
+    icon: str | None = Field(None, max_length=50)
 
     @field_validator("name")
     @classmethod
@@ -29,6 +30,7 @@ class HabitUpdate(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=100)
     description: str | None = Field(None, max_length=500)
     color: str | None = Field(None, pattern=r"^#[0-9A-Fa-f]{6}$")
+    icon: str | None = Field(None, max_length=50)
 
     @field_validator("name")
     @classmethod
@@ -45,6 +47,7 @@ class HabitResponse(HabitBase):
 
     id: int
     color: str
+    icon: str | None = None
     current_streak: int = 0
     longest_streak: int = 0
     completion_rate: float = 0.0

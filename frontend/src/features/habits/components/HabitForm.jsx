@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../../components/ui/Button';
+import IconPicker from '../../../components/ui/IconPicker';
 import { useCreateHabit, useUpdateHabit } from '../hooks/useHabits';
 
 const COLOR_OPTIONS = [
@@ -19,6 +20,7 @@ export function HabitForm({ onSuccess, habit = null }) {
   const [name, setName] = useState(habit?.name || '');
   const [description, setDescription] = useState(habit?.description || '');
   const [color, setColor] = useState(habit?.color || COLOR_OPTIONS[0]);
+  const [icon, setIcon] = useState(habit?.icon || null);
   const [error, setError] = useState('');
 
   const { mutate: createHabit, isPending: isCreating } = useCreateHabit();
@@ -39,6 +41,7 @@ export function HabitForm({ onSuccess, habit = null }) {
       name: name.trim(),
       description: description.trim() || null,
       color,
+      icon,
     };
 
     if (isEditing) {
@@ -55,6 +58,7 @@ export function HabitForm({ onSuccess, habit = null }) {
           setName('');
           setDescription('');
           setColor(COLOR_OPTIONS[0]);
+          setIcon(null);
           onSuccess?.();
         },
         onError: (err) => {
@@ -120,6 +124,13 @@ export function HabitForm({ onSuccess, habit = null }) {
             />
           ))}
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Icon (optional)
+        </label>
+        <IconPicker value={icon} onChange={setIcon} />
       </div>
 
       {error && (

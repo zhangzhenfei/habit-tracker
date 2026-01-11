@@ -1,73 +1,70 @@
 ---
-description: Prime agent with codebase understanding
+description: 加载项目上下文理解代码库
 ---
 
-# Prime: Load Project Context
+# Prime: 加载项目上下文
 
-## Objective
+## 目标
 
-Build comprehensive understanding of the codebase by analyzing structure, documentation, and key files.
+通过分析结构、文档和关键文件，全面理解代码库。
 
-## Process
+## 流程
 
-### 1. Analyze Project Structure
+### 1. 分析项目结构
 
-List all tracked files:
+列出所有跟踪文件：
 !`git ls-files`
 
-Show directory structure:
-On Linux, run: `tree -L 3 -I 'node_modules|__pycache__|.git|dist|build'`
+显示目录结构：
+`tree -L 3 -I 'node_modules|__pycache__|.git|dist'`
 
-### 2. Read Core Documentation
+### 2. 阅读核心文档
 
-- Read CLAUDE.md or similar global rules file
-- Read README files at project root and major directories
-- Read any architecture documentation
+- CLAUDE.md 或类似规则文件
+- 项目根目录和主要目录的 README
+- 架构文档
 
-### 3. Identify Key Files
+### 3. 识别关键文件
 
-Based on the structure, identify and read:
-- Main entry points (main.py, index.ts, app.py, etc.)
-- Core configuration files (pyproject.toml, package.json, tsconfig.json)
-- Key model/schema definitions
-- Important service or controller files
+根据结构，识别并阅读：
+- 主入口（main.py, index.ts, app.py）
+- 配置文件（pyproject.toml, package.json）
+- 模型/模式定义
+- 重要服务或控制器
 
-### 4. Understand Current State
+### 4. 了解当前状态
 
-Check recent activity:
-!`git log -10 --oneline`
+```bash
+git log -10 --oneline
+git status
+```
 
-Check current branch and status:
-!`git status`
+## 输出报告
 
-## Output Report
+### 项目概览
+- 用途和类型
+- 主要技术框架
+- 当前版本/状态
 
-Provide a concise summary covering:
+### 架构
+- 整体结构
+- 关键架构模式
+- 重要目录及用途
 
-### Project Overview
-- Purpose and type of application
-- Primary technologies and frameworks
-- Current version/state
+### 技术栈
+- 语言和版本
+- 框架和主要库
+- 构建工具
+- 测试框架
 
-### Architecture
-- Overall structure and organization
-- Key architectural patterns identified
-- Important directories and their purposes
+### 核心原则
+- 代码风格约定
+- 文档标准
+- 测试方法
 
-### Tech Stack
-- Languages and versions
-- Frameworks and major libraries
-- Build tools and package managers
-- Testing frameworks
+### 当前状态
+- 活跃分支
+- 近期变更
+- 即时观察
 
-### Core Principles
-- Code style and conventions observed
-- Documentation standards
-- Testing approach
-
-### Current State
-- Active branch
-- Recent changes or development focus
-- Any immediate observations or concerns
-
-**Make this summary easy to scan - use bullet points and clear headers.**
+**使用要点和清晰标题，便于快速浏览。**

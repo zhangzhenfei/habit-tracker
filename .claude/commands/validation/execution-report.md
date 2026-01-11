@@ -1,72 +1,54 @@
 ---
-description: Generate implementation report for system review
+description: 生成实现报告供系统审查
 ---
 
-# Execution Report
+# 执行报告
 
-Review and deeply analyze the implementation you just completed.
+深入分析刚完成的实现。
 
-## Context
+## 上下文
 
-You have just finished implementing a feature. Before moving on, reflect on:
+刚完成功能实现，反思：
+- 实现了什么
+- 与计划的一致性
+- 遇到的挑战
+- 偏离及原因
 
-- What you implemented
-- How it aligns with the plan
-- What challenges you encountered
-- What diverged and why
+## 生成报告
 
-## Generate Report
+保存到：`.agents/execution-reports/[功能名].md`
 
-Save to: `.agents/execution-reports/[feature-name].md`
+### 元信息
+- 计划文件：[路径]
+- 新增文件：[列表]
+- 修改文件：[列表]
+- 变更行数：+X -Y
 
-### Meta Information
+### 验证结果
+- 语法 & Lint：✓/✗
+- 类型检查：✓/✗
+- 单元测试：✓/✗ [X 通过, Y 失败]
+- 集成测试：✓/✗
 
-- Plan file: [path to plan that guided this implementation]
-- Files added: [list with paths]
-- Files modified: [list with paths]
-- Lines changed: +X -Y
+### 顺利之处
+- [具体示例]
 
-### Validation Results
+### 遇到的挑战
+- [困难及原因]
 
-- Syntax & Linting: ✓/✗ [details if failed]
-- Type Checking: ✓/✗ [details if failed]
-- Unit Tests: ✓/✗ [X passed, Y failed]
-- Integration Tests: ✓/✗ [X passed, Y failed]
+### 偏离计划
 
-### What Went Well
+**[偏离标题]**
+- 计划：[计划内容]
+- 实际：[实际实现]
+- 原因：[偏离原因]
+- 类型：[更好方案 | 计划假设错误 | 安全考虑 | 性能问题]
 
-List specific things that worked smoothly:
+### 跳过项
+- [跳过内容]
+- 原因：[原因]
 
-- [concrete examples]
-
-### Challenges Encountered
-
-List specific difficulties:
-
-- [what was difficult and why]
-
-### Divergences from Plan
-
-For each divergence, document:
-
-**[Divergence Title]**
-
-- Planned: [what the plan specified]
-- Actual: [what was implemented instead]
-- Reason: [why this divergence occurred]
-- Type: [Better approach found | Plan assumption wrong | Security concern | Performance issue | Other]
-
-### Skipped Items
-
-List anything from the plan that was not implemented:
-
-- [what was skipped]
-- Reason: [why it was skipped]
-
-### Recommendations
-
-Based on this implementation, what should change for next time?
-
-- Plan command improvements: [suggestions]
-- Execute command improvements: [suggestions]
-- CLAUDE.md additions: [suggestions]
+### 建议
+- Plan 命令改进：[建议]
+- Execute 命令改进：[建议]
+- CLAUDE.md 补充：[建议]

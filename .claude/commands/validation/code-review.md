@@ -1,113 +1,71 @@
 ---
-description: Technical code review for quality and bugs that runs pre-commit
+description: 提交前的技术代码审查
 ---
 
-Perform technical code review on recently changed files.
+对最近更改的文件进行技术代码审查。
 
-## Core Principles
+## 核心原则
 
-Review Philosophy:
+- 简洁是终极的复杂 - 每行代码都应证明其存在价值
+- 代码被阅读的次数远多于编写 - 优化可读性
+- 最好的代码往往是你不写的代码
 
-- Simplicity is the ultimate sophistication - every line should justify its existence
-- Code is read far more often than it's written - optimize for readability
-- The best code is often the code you don't write
-- Elegance emerges from clarity of intent and economy of expression
+## 审查内容
 
-## What to Review
-
-Start by gathering codebase context to understand the codebase standards and patterns.
-
-Start by examining:
-
+先了解代码库标准：
 - CLAUDE.md
 - README.md
-- Key files in the /core module
-- Documented standards in the /docs directory
+- /docs 目录中的标准文档
 
-After you have a good understanding
-
-Run these commands:
+然后运行：
 
 ```bash
 git status
 git diff HEAD
 git diff --stat HEAD
-```
-
-Then check the list of new files:
-
-```bash
 git ls-files --others --exclude-standard
 ```
 
-Read each new file in its entirety. Read each changed file in its entirety (not just the diff) to understand full context.
+完整阅读每个新文件和更改的文件（不仅是 diff）。
 
-For each changed file or new file, analyze for:
+## 审查要点
 
-1. **Logic Errors**
-   - Off-by-one errors
-   - Incorrect conditionals
-   - Missing error handling
-   - Race conditions
+1. **逻辑错误** - 边界错误、条件错误、缺少错误处理、竞态条件
+2. **安全问题** - SQL 注入、XSS、不安全数据处理、暴露密钥
+3. **性能问题** - N+1 查询、低效算法、内存泄漏
+4. **代码质量** - DRY 违规、过度复杂、命名不当、缺少类型提示
+5. **遵循标准** - lint/类型/格式、日志、测试标准
 
-2. **Security Issues**
-   - SQL injection vulnerabilities
-   - XSS vulnerabilities
-   - Insecure data handling
-   - Exposed secrets or API keys
+## 验证问题
 
-3. **Performance Problems**
-   - N+1 queries
-   - Inefficient algorithms
-   - Memory leaks
-   - Unnecessary computations
+- 运行相关测试
+- 确认类型错误真实
+- 验证安全问题有上下文
 
-4. **Code Quality**
-   - Violations of DRY principle
-   - Overly complex functions
-   - Poor naming
-   - Missing type hints/annotations
+## 输出格式
 
-5. **Adherence to Codebase Standards and Existing Patterns**
-   - Adherence to standards documented in the /docs directory
-   - Linting, typing, and formatting standards
-   - Logging standards
-   - Testing standards
+保存到：`.agents/code-reviews/[名称].md`
 
-## Verify Issues Are Real
+**统计**：
+- 修改文件数
+- 新增文件数
+- 新增/删除行数
 
-- Run specific tests for issues found
-- Confirm type errors are legitimate
-- Validate security concerns with context
-
-## Output Format
-
-Save a new file to `.agents/code-reviews/[appropriate-name].md`
-
-**Stats:**
-
-- Files Modified: 0
-- Files Added: 0
-- Files Deleted: 0
-- New lines: 0
-- Deleted lines: 0
-
-**For each issue found:**
-
+**每个问题**：
 ```
 severity: critical|high|medium|low
 file: path/to/file.py
 line: 42
-issue: [one-line description]
-detail: [explanation of why this is a problem]
-suggestion: [how to fix it]
+issue: [一行描述]
+detail: [为什么是问题]
+suggestion: [如何修复]
 ```
 
-If no issues found: "Code review passed. No technical issues detected."
+无问题则输出："代码审查通过。未检测到技术问题。"
 
-## Important
+## 重要
 
-- Be specific (line numbers, not vague complaints)
-- Focus on real bugs, not style
-- Suggest fixes, don't just complain
-- Flag security issues as CRITICAL
+- 具体（行号，不要模糊抱怨）
+- 关注真正的 bug，不是风格
+- 建议修复，不只是抱怨
+- 安全问题标记为 CRITICAL

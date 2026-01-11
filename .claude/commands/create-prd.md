@@ -1,151 +1,62 @@
 ---
-description: Create a Product Requirements Document from conversation
-argument-hint: [output-filename]
+description: 从对话创建产品需求文档
+argument-hint: [输出文件名]
 ---
 
-# Create PRD: Generate Product Requirements Document
+# 创建 PRD
 
-## Overview
+根据当前对话上下文生成产品需求文档。
 
-Generate a comprehensive Product Requirements Document (PRD) based on the current conversation context and requirements discussed. Use the structure and sections defined below to create a thorough, professional PRD.
+## 输出文件
 
-## Output File
+写入：`$ARGUMENTS`（默认：`PRD.md`）
 
-Write the PRD to: `$ARGUMENTS` (default: `PRD.md`)
+## PRD 结构
 
-## PRD Structure
+### 必需章节
 
-Create a well-structured PRD with the following sections. Adapt depth and detail based on available information:
+1. **概述** - 产品概览、核心价值、MVP 目标
+2. **使命** - 使命宣言、核心原则（3-5条）
+3. **目标用户** - 用户画像、技术水平、需求痛点
+4. **MVP 范围** - 包含（✅）/ 不包含（❌），按类别分组
+5. **用户故事** - "作为...我想...以便..."格式，含具体示例
+6. **架构** - 高层架构、目录结构、设计模式
+7. **功能详情** - 详细功能规格
+8. **技术栈** - 后端/前端技术和版本
+9. **安全配置** - 认证、配置管理、部署考虑
+10. **API 规范** - 端点、请求/响应格式、示例
+11. **成功标准** - MVP 定义、功能要求（✅）、质量指标
+12. **实现阶段** - 分 3-4 阶段，含目标、交付物、验证标准
+13. **未来考虑** - MVP 后增强、集成机会
+14. **风险缓解** - 3-5 个关键风险及缓解策略
 
-### Required Sections
+## 执行步骤
 
-**1. Executive Summary**
-- Concise product overview (2-3 paragraphs)
-- Core value proposition
-- MVP goal statement
+### 1. 提取需求
+- 回顾对话历史
+- 识别显式需求和隐式需求
+- 记录技术约束和偏好
 
-**2. Mission**
-- Product mission statement
-- Core principles (3-5 key principles)
+### 2. 综合信息
+- 组织到适当章节
+- 填补合理假设
+- 确保技术可行性
 
-**3. Target Users**
-- Primary user personas
-- Technical comfort level
-- Key user needs and pain points
+### 3. 编写 PRD
+- 清晰专业语言
+- 具体示例
+- Markdown 格式
 
-**4. MVP Scope**
-- **In Scope:** Core functionality for MVP (use ✅ checkboxes)
-- **Out of Scope:** Features deferred to future phases (use ❌ checkboxes)
-- Group by categories (Core Functionality, Technical, Integration, Deployment)
+### 4. 质量检查
+- ✅ 章节完整
+- ✅ 用户故事清晰
+- ✅ 范围合理
+- ✅ 成功标准可衡量
 
-**5. User Stories**
-- Primary user stories (5-8 stories) in format: "As a [user], I want to [action], so that [benefit]"
-- Include concrete examples for each story
-- Add technical user stories if relevant
+## 输出确认
 
-**6. Core Architecture & Patterns**
-- High-level architecture approach
-- Directory structure (if applicable)
-- Key design patterns and principles
-- Technology-specific patterns
-
-**7. Tools/Features**
-- Detailed feature specifications
-- If building an agent: Tool designs with purpose, operations, and key features
-- If building an app: Core feature breakdown
-
-**8. Technology Stack**
-- Backend/Frontend technologies with versions
-- Dependencies and libraries
-- Optional dependencies
-- Third-party integrations
-
-**9. Security & Configuration**
-- Authentication/authorization approach
-- Configuration management (environment variables, settings)
-- Security scope (in-scope and out-of-scope)
-- Deployment considerations
-
-**10. API Specification** (if applicable)
-- Endpoint definitions
-- Request/response formats
-- Authentication requirements
-- Example payloads
-
-**11. Success Criteria**
-- MVP success definition
-- Functional requirements (use ✅ checkboxes)
-- Quality indicators
-- User experience goals
-
-**12. Implementation Phases**
-- Break down into 3-4 phases
-- Each phase includes: Goal, Deliverables (✅ checkboxes), Validation criteria
-- Realistic timeline estimates
-
-**13. Future Considerations**
-- Post-MVP enhancements
-- Integration opportunities
-- Advanced features for later phases
-
-**14. Risks & Mitigations**
-- 3-5 key risks with specific mitigation strategies
-
-**15. Appendix** (if applicable)
-- Related documents
-- Key dependencies with links
-- Repository/project structure
-
-## Instructions
-
-### 1. Extract Requirements
-- Review the entire conversation history
-- Identify explicit requirements and implicit needs
-- Note technical constraints and preferences
-- Capture user goals and success criteria
-
-### 2. Synthesize Information
-- Organize requirements into appropriate sections
-- Fill in reasonable assumptions where details are missing
-- Maintain consistency across sections
-- Ensure technical feasibility
-
-### 3. Write the PRD
-- Use clear, professional language
-- Include concrete examples and specifics
-- Use markdown formatting (headings, lists, code blocks, checkboxes)
-- Add code snippets for technical sections where helpful
-- Keep Executive Summary concise but comprehensive
-
-### 4. Quality Checks
-- ✅ All required sections present
-- ✅ User stories have clear benefits
-- ✅ MVP scope is realistic and well-defined
-- ✅ Technology choices are justified
-- ✅ Implementation phases are actionable
-- ✅ Success criteria are measurable
-- ✅ Consistent terminology throughout
-
-## Style Guidelines
-
-- **Tone:** Professional, clear, action-oriented
-- **Format:** Use markdown extensively (headings, lists, code blocks, tables)
-- **Checkboxes:** Use ✅ for in-scope items, ❌ for out-of-scope
-- **Specificity:** Prefer concrete examples over abstract descriptions
-- **Length:** Comprehensive but scannable (typically 30-60 sections worth of content)
-
-## Output Confirmation
-
-After creating the PRD:
-1. Confirm the file path where it was written
-2. Provide a brief summary of the PRD contents
-3. Highlight any assumptions made due to missing information
-4. Suggest next steps (e.g., review, refinement, planning)
-
-## Notes
-
-- If critical information is missing, ask clarifying questions before generating
-- Adapt section depth based on available details
-- For highly technical products, emphasize architecture and technical stack
-- For user-facing products, emphasize user stories and experience
-- This command contains the complete PRD template structure - no external references needed
+创建后：
+1. 确认文件路径
+2. 简要总结内容
+3. 说明假设
+4. 建议下一步

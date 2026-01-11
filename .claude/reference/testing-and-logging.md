@@ -1,116 +1,70 @@
-# Testing & Logging Best Practices Reference
+# 测试与日志最佳实践
 
-A concise reference guide for structured logging with structlog and comprehensive testing strategies.
+## 目录
 
----
+**第一部分：structlog 日志**
+1. [为什么用 structlog](#1-为什么用-structlog)
+2. [配置](#2-配置)
+3. [FastAPI 集成](#3-fastapi-集成)
+4. [上下文绑定](#4-上下文绑定)
+5. [异常日志](#5-异常日志)
 
-## Table of Contents
-
-**Part 1: Logging with structlog**
-1. [Why structlog](#1-why-structlog)
-2. [Configuration](#2-configuration)
-3. [FastAPI Integration](#3-fastapi-integration)
-4. [Context Binding](#4-context-binding)
-5. [Exception Logging](#5-exception-logging)
-6. [Testing with structlog](#6-testing-with-structlog)
-
-**Part 2: Testing Strategy**
-7. [Testing Pyramid](#7-testing-pyramid)
-8. [Unit Testing (Python)](#8-unit-testing-python)
-9. [Integration Testing (FastAPI)](#9-integration-testing-fastapi)
-10. [React Component Testing](#10-react-component-testing)
-11. [E2E Testing with Playwright](#11-e2e-testing-with-playwright)
-12. [Test Organization](#12-test-organization)
+**第二部分：测试策略**
+6. [测试金字塔](#6-测试金字塔)
+7. [单元测试](#7-单元测试)
+8. [集成测试](#8-集成测试)
+9. [React 组件测试](#9-react-组件测试)
+10. [E2E 测试](#10-e2e-测试)
+11. [测试组织](#11-测试组织)
 
 ---
 
-# Part 1: Logging with structlog
+# 第一部分：structlog 日志
 
-## 1. Why structlog
+## 1. 为什么用 structlog
 
-### Advantages Over Standard Logging
+| 特性 | 标准 logging | structlog |
+|-----|-------------|-----------|
+| 输出格式 | 纯文本 | 结构化键值对 |
+| 上下文 | 每次手动 | 绑定后自动携带 |
+| JSON 输出 | 需自定义 | 内置 |
 
-| Feature | Standard logging | structlog |
-|---------|------------------|-----------|
-| Output format | Plain text | Structured key-value pairs |
-| Context | Manual per-call | Bound loggers carry context |
-| Configuration | Complex hierarchy | Declarative processor chains |
-| JSON output | Requires custom formatter | Built-in |
-| Performance | Good | Excellent with caching |
-
-### Key Benefits
-
-- **Structured data**: Logs as key-value pairs for easy parsing
-- **Bound loggers**: Add context once, appears in all subsequent logs
-- **Processor pipelines**: Transform logs through composable functions
-- **Environment-aware**: Pretty console for dev, JSON for production
+**核心优势**：
+- 结构化数据，便于解析
+- 绑定 logger 自动携带上下文
+- 开发用彩色输出，生产用 JSON
 
 ---
 
-## 2. Configuration
-
-### Basic Setup
+## 2. 配置
 
 ```python
 # app/logging_config.py
-import logging
 import structlog
 
 def configure_logging(json_format: bool = False):
-    """Configure structlog for the application."""
-
     shared_processors = [
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.StackInfoRenderer(),
     ]
 
     if json_format:
-        # Production: JSON output
-        processors = shared_processors + [
-            structlog.processors.dict_tracebacks,
-            structlog.processors.JSONRenderer(),
-        ]
+        processors = shared_processors + [structlog.processors.JSONRenderer()]
     else:
-        # Development: Pretty console output
-        processors = shared_processors + [
-            structlog.processors.format_exc_info,
-            structlog.dev.ConsoleRenderer(colors=True),
-        ]
+        processors = shared_processors + [structlog.dev.ConsoleRenderer(colors=True)]
 
     structlog.configure(
         processors=processors,
         wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
-        context_class=dict,
-        logger_factory=structlog.PrintLoggerFactory(),
         cache_logger_on_first_use=True,
     )
 ```
 
-### Environment-Based Configuration
+### FastAPI 初始化
 
 ```python
-import os
-import sys
-
-def configure_logging():
-    # Auto-detect: JSON for production/CI, console for development
-    use_json = (
-        os.environ.get("LOG_JSON", "false").lower() == "true"
-        or os.environ.get("CI", "false").lower() == "true"
-        or not sys.stderr.isatty()
-    )
-    configure_logging(json_format=use_json)
-```
-
-### Initialize in FastAPI
-
-```python
-# app/main.py
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from app.logging_config import configure_logging
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -122,25 +76,19 @@ app = FastAPI(lifespan=lifespan)
 
 ---
 
-## 3. FastAPI Integration
+## 3. FastAPI 集成
 
-### Request Logging Middleware
+### 请求日志中间件
 
 ```python
-# app/middleware.py
-import time
-import uuid
 import structlog
 from starlette.middleware.base import BaseHTTPMiddleware
-from fastapi import Request
 
 logger = structlog.get_logger()
 
 class LoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        # Clear context and bind request info
+    async def dispatch(self, request, call_next):
         structlog.contextvars.clear_contextvars()
-
         request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
 
         structlog.contextvars.bind_contextvars(
@@ -150,723 +98,323 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         )
 
         start_time = time.perf_counter()
+        response = await call_next(request)
+        duration_ms = (time.perf_counter() - start_time) * 1000
 
-        try:
-            response = await call_next(request)
-            duration_ms = (time.perf_counter() - start_time) * 1000
-
-            logger.info(
-                "Request completed",
-                status_code=response.status_code,
-                duration_ms=round(duration_ms, 2),
-            )
-
-            response.headers["X-Request-ID"] = request_id
-            return response
-
-        except Exception as exc:
-            duration_ms = (time.perf_counter() - start_time) * 1000
-            logger.exception(
-                "Request failed",
-                duration_ms=round(duration_ms, 2),
-            )
-            raise
-```
-
-### Add Middleware to App
-
-```python
-# app/main.py
-from app.middleware import LoggingMiddleware
-
-app.add_middleware(LoggingMiddleware)
+        logger.info("请求完成", status_code=response.status_code, duration_ms=round(duration_ms, 2))
+        response.headers["X-Request-ID"] = request_id
+        return response
 ```
 
 ---
 
-## 4. Context Binding
-
-### Request-Scoped Context
+## 4. 上下文绑定
 
 ```python
-import structlog
+# 请求级上下文
+structlog.contextvars.bind_contextvars(request_id="abc-123", user_id=42)
 
-# In middleware or early in request handling
-structlog.contextvars.bind_contextvars(
-    request_id="abc-123",
-    user_id=42,
-    path="/api/habits",
-)
-
-# All subsequent logs include this context automatically
+# 后续日志自动包含上下文
 logger = structlog.get_logger()
-logger.info("Processing request")  # Includes request_id, user_id, path
-logger.info("Fetching data")       # Same context
-```
+logger.info("处理请求")  # 包含 request_id, user_id
 
-### Temporary Context
-
-```python
-# Add temporary context for a code block
+# 临时上下文
 with structlog.contextvars.bound_contextvars(operation="streak_calculation"):
-    logger.info("Starting calculation")
-    # ... do work
-    logger.info("Calculation complete")
-# Context is restored after the block
-```
+    logger.info("开始计算")
+# 块结束后上下文恢复
 
-### Per-Logger Binding
-
-```python
-# Create a logger with bound context
-logger = structlog.get_logger().bind(
-    component="habit_service",
-    version="1.0",
-)
-
-logger.info("Service started")  # Includes component, version
+# 每个 logger 绑定
+logger = structlog.get_logger().bind(component="habit_service")
+logger.info("服务启动")  # 包含 component
 ```
 
 ---
 
-## 5. Exception Logging
-
-### Logging Exceptions
+## 5. 异常日志
 
 ```python
-logger = structlog.get_logger()
-
 try:
     risky_operation()
 except Exception:
-    # Option 1: exc_info=True
-    logger.error("Operation failed", exc_info=True)
-
-    # Option 2: .exception() method (same as error with exc_info=True)
-    logger.exception("Operation failed")
+    logger.exception("操作失败")  # 自动包含堆栈
 ```
-
-### Structured Exception Output
-
-For JSON logging, configure `dict_tracebacks` processor:
-
-```python
-structlog.processors.dict_tracebacks
-```
-
-This produces JSON-serializable exception data instead of multiline strings.
 
 ---
 
-## 6. Testing with structlog
+# 第二部分：测试策略
 
-### Using capture_logs
+## 6. 测试金字塔
 
-```python
-import structlog
-from structlog.testing import capture_logs
+| 层级 | 占比 | 速度 | 范围 |
+|-----|-----|-----|-----|
+| 单元 | 70% | 毫秒 | 单函数/类 |
+| 集成 | 20% | 秒 | 多组件 |
+| E2E | 10% | 分钟 | 全系统 |
 
-def test_logs_habit_creation():
-    with capture_logs() as captured:
-        # Call function that logs
-        create_habit("Exercise")
+**各层内容**：
+- **单元**：纯函数、验证器、业务逻辑
+- **集成**：API 端点、数据库操作
+- **E2E**：关键用户流程
 
-    assert captured == [
-        {
-            "event": "Habit created",
-            "habit_name": "Exercise",
-            "log_level": "info",
-        }
-    ]
-```
+---
 
-### Pytest Fixture
+## 7. 单元测试
 
 ```python
-# tests/conftest.py
 import pytest
-import structlog
-from structlog.testing import LogCapture
-
-@pytest.fixture
-def log_output():
-    return LogCapture()
-
-@pytest.fixture(autouse=True)
-def configure_structlog(log_output):
-    structlog.configure(processors=[log_output])
-    yield
-    structlog.reset_defaults()
-```
-
-```python
-# tests/test_service.py
-def test_service_logs_correctly(log_output):
-    do_something()
-
-    assert log_output.entries == [
-        {"event": "something happened", "log_level": "info"}
-    ]
-```
-
----
-
-# Part 2: Testing Strategy
-
-## 7. Testing Pyramid
-
-### Distribution
-
-| Layer | Percentage | Speed | Scope |
-|-------|------------|-------|-------|
-| Unit | 70% | ms | Single function/class |
-| Integration | 20% | seconds | Multiple components |
-| E2E | 10% | minutes | Full system |
-
-### What Belongs Where
-
-**Unit Tests:**
-- Pure functions (streak calculation, date utilities)
-- Pydantic validators
-- Business logic with mocked dependencies
-
-**Integration Tests:**
-- API endpoints with real database
-- Repository operations
-- Service layer with real dependencies
-
-**E2E Tests:**
-- Critical user journeys only
-- Full frontend + backend interaction
-- Visual regression testing
-
----
-
-## 8. Unit Testing (Python)
-
-### Structure
-
-```python
-# tests/unit/test_streak_calculator.py
-import pytest
-from datetime import date
 from app.services.streak import calculate_streak
 
 class TestStreakCalculation:
-    def test_returns_zero_for_empty_completions(self):
-        result = calculate_streak([])
-        assert result == 0
+    def test_空完成返回零(self):
+        assert calculate_streak([]) == 0
 
-    def test_returns_one_for_single_completion_today(self):
-        result = calculate_streak([date.today()])
-        assert result == 1
-
-    def test_counts_consecutive_days(self):
+    def test_连续天数计数(self):
         completions = [date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 3)]
-        result = calculate_streak(completions)
-        assert result == 3
+        assert calculate_streak(completions) == 3
 
-    def test_breaks_on_gap(self):
-        completions = [date(2025, 1, 1), date(2025, 1, 3)]  # Gap on Jan 2
-        result = calculate_streak(completions)
-        assert result == 1  # Only Jan 3 counts
-```
-
-### Parametrized Tests
-
-```python
+# 参数化测试
 @pytest.mark.parametrize("completions,expected", [
     ([], 0),
     ([date(2025, 1, 1)], 1),
-    ([date(2025, 1, 1), date(2025, 1, 2)], 2),
-    ([date(2025, 1, 1), date(2025, 1, 3)], 1),  # Gap breaks streak
+    ([date(2025, 1, 1), date(2025, 1, 3)], 1),  # 间隔打断
 ])
 def test_streak_calculation(completions, expected):
     assert calculate_streak(completions) == expected
 ```
 
-### Mocking
+### Mock
 
 ```python
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 def test_service_calls_repository():
     mock_repo = Mock()
-    mock_repo.get_by_id.return_value = Habit(id=1, name="Exercise")
+    mock_repo.get_by_id.return_value = Habit(id=1, name="运动")
 
     service = HabitService(repository=mock_repo)
     result = service.get_habit(1)
 
     mock_repo.get_by_id.assert_called_once_with(1)
-    assert result.name == "Exercise"
+    assert result.name == "运动"
 ```
 
 ---
 
-## 9. Integration Testing (FastAPI)
+## 8. 集成测试
 
-### Test Setup
+### 测试设置
 
 ```python
-# tests/conftest.py
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, StaticPool
-from sqlalchemy.orm import sessionmaker
 
-from app.main import app
-from app.database import Base, get_db
-
-@pytest.fixture(scope="function")
+@pytest.fixture
 def db_session():
-    """Create a fresh database for each test."""
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+    engine = create_engine("sqlite:///:memory:", poolclass=StaticPool)
     Base.metadata.create_all(engine)
-    SessionLocal = sessionmaker(bind=engine)
+    session = sessionmaker(bind=engine)()
+    yield session
+    session.close()
 
-    session = SessionLocal()
-    try:
-        yield session
-    finally:
-        session.close()
-        Base.metadata.drop_all(engine)
-
-@pytest.fixture(scope="function")
+@pytest.fixture
 def client(db_session):
-    """Create test client with overridden database."""
     def override_get_db():
-        try:
-            yield db_session
-        finally:
-            pass
-
+        yield db_session
     app.dependency_overrides[get_db] = override_get_db
-
-    with TestClient(app) as test_client:
-        yield test_client
-
+    with TestClient(app) as c:
+        yield c
     app.dependency_overrides.clear()
 ```
 
-### API Tests
+### API 测试
 
 ```python
-# tests/integration/test_api_habits.py
-
 class TestHabitAPI:
-    def test_create_habit_returns_201(self, client):
-        response = client.post(
-            "/api/habits",
-            json={"name": "Exercise", "description": "Daily workout"}
-        )
-
+    def test_创建习惯返回201(self, client):
+        response = client.post("/api/habits", json={"name": "运动"})
         assert response.status_code == 201
-        data = response.json()
-        assert data["name"] == "Exercise"
-        assert "id" in data
+        assert response.json()["name"] == "运动"
 
-    def test_create_habit_without_name_returns_422(self, client):
+    def test_无名称返回422(self, client):
         response = client.post("/api/habits", json={})
-
         assert response.status_code == 422
 
-    def test_get_habit_returns_habit(self, client, db_session):
-        # Setup: Create habit in database
-        habit = Habit(name="Test", created_at=datetime.utcnow())
-        db_session.add(habit)
-        db_session.commit()
-
-        # Test
-        response = client.get(f"/api/habits/{habit.id}")
-
-        assert response.status_code == 200
-        assert response.json()["name"] == "Test"
-
-    def test_get_nonexistent_habit_returns_404(self, client):
+    def test_不存在返回404(self, client):
         response = client.get("/api/habits/99999")
-
         assert response.status_code == 404
-```
-
-### Database Isolation with Transactions
-
-```python
-@pytest.fixture
-def db_session():
-    """Rollback after each test for isolation."""
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = Session(bind=connection)
-
-    yield session
-
-    session.close()
-    transaction.rollback()
-    connection.close()
 ```
 
 ---
 
-## 10. React Component Testing
+## 9. React 组件测试
 
-### Setup with Vitest
+### Vitest 设置
 
 ```javascript
 // vite.config.js
 export default defineConfig({
-  plugins: [react()],
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: './src/test/setup.js',
-  },
+  test: { globals: true, environment: 'jsdom', setupFiles: './src/test/setup.js' },
 });
 
 // src/test/setup.js
 import '@testing-library/jest-dom';
 ```
 
-### Component Tests
+### 组件测试
 
 ```javascript
-// src/features/habits/__tests__/HabitCard.test.jsx
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { HabitCard } from '../components/HabitCard';
 
 describe('HabitCard', () => {
-  const mockHabit = {
-    id: 1,
-    name: 'Exercise',
-    currentStreak: 5,
-    completedToday: false,
-  };
-
-  it('renders habit name', () => {
-    render(<HabitCard habit={mockHabit} />);
-
-    expect(screen.getByText('Exercise')).toBeInTheDocument();
+  it('渲染习惯名称', () => {
+    render(<HabitCard habit={{ id: 1, name: '运动' }} />);
+    expect(screen.getByText('运动')).toBeInTheDocument();
   });
 
-  it('displays current streak', () => {
-    render(<HabitCard habit={mockHabit} />);
-
-    expect(screen.getByText(/5.*streak/i)).toBeInTheDocument();
-  });
-
-  it('calls onComplete when button clicked', async () => {
+  it('点击调用 onComplete', async () => {
     const onComplete = vi.fn();
-    render(<HabitCard habit={mockHabit} onComplete={onComplete} />);
-
-    await userEvent.click(screen.getByRole('button', { name: /complete/i }));
-
+    render(<HabitCard habit={{ id: 1, name: '运动' }} onComplete={onComplete} />);
+    await userEvent.click(screen.getByRole('button', { name: /完成/i }));
     expect(onComplete).toHaveBeenCalledWith(1);
-  });
-
-  it('shows completed state', () => {
-    const completedHabit = { ...mockHabit, completedToday: true };
-    render(<HabitCard habit={completedHabit} />);
-
-    expect(screen.getByRole('button')).toBeDisabled();
   });
 });
 ```
 
-### Testing with Providers
+### 查询优先级
 
-```javascript
-// src/test/utils.jsx
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
-
-export function renderWithProviders(ui) {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-    },
-  });
-
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        {ui}
-      </BrowserRouter>
-    </QueryClientProvider>
-  );
-}
-```
-
-### Query Priority (Use in Order)
-
-1. `getByRole` - Accessible name (best)
-2. `getByLabelText` - Form labels
-3. `getByText` - Text content
-4. `getByTestId` - Last resort
-
-```javascript
-// Preferred
-screen.getByRole('button', { name: /submit/i });
-screen.getByLabelText('Email');
-
-// Avoid
-screen.getByTestId('submit-button');  // Only when necessary
-```
+1. `getByRole` - 无障碍名称（最佳）
+2. `getByLabelText` - 表单标签
+3. `getByText` - 文本内容
+4. `getByTestId` - 最后手段
 
 ---
 
-## 11. E2E Testing with Playwright
+## 10. E2E 测试
 
-### Playwright MCP Server Setup
-
-```bash
-# Add Playwright MCP to Claude Code
-claude mcp add playwright npx @playwright/mcp@latest
-```
-
-### Configuration
+### Playwright 配置
 
 ```javascript
 // playwright.config.js
-import { defineConfig } from '@playwright/test';
-
 export default defineConfig({
   testDir: './tests/e2e',
-  fullyParallel: true,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : undefined,
-  reporter: 'html',
-  use: {
-    baseURL: 'http://localhost:5173',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-  },
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-  },
+  use: { baseURL: 'http://localhost:5173' },
+  webServer: { command: 'npm run dev', url: 'http://localhost:5173' },
 });
 ```
 
-### Page Object Model
+### Page Object 模式
 
 ```javascript
-// tests/e2e/pages/DashboardPage.js
 export class DashboardPage {
   constructor(page) {
     this.page = page;
-    this.addHabitButton = page.getByRole('button', { name: /add habit/i });
-    this.habitList = page.getByTestId('habit-list');
+    this.addHabitButton = page.getByRole('button', { name: /添加习惯/i });
   }
 
-  async goto() {
-    await this.page.goto('/');
-  }
+  async goto() { await this.page.goto('/'); }
 
   async addHabit(name) {
     await this.addHabitButton.click();
-    await this.page.getByLabel('Habit name').fill(name);
-    await this.page.getByRole('button', { name: /save/i }).click();
-  }
-
-  async completeHabit(name) {
-    const habitCard = this.page.getByTestId(`habit-${name}`);
-    await habitCard.getByRole('button', { name: /complete/i }).click();
-  }
-
-  async getHabitStreak(name) {
-    const habitCard = this.page.getByTestId(`habit-${name}`);
-    return habitCard.getByTestId('streak-count').textContent();
+    await this.page.getByLabel('习惯名称').fill(name);
+    await this.page.getByRole('button', { name: /保存/i }).click();
   }
 }
 ```
 
-### E2E Tests
+### E2E 测试
 
 ```javascript
-// tests/e2e/habits.spec.js
 import { test, expect } from '@playwright/test';
 import { DashboardPage } from './pages/DashboardPage';
 
-test.describe('Habit Tracking', () => {
-  test('user can create and complete a habit', async ({ page }) => {
-    const dashboard = new DashboardPage(page);
-
-    await dashboard.goto();
-    await dashboard.addHabit('Exercise');
-
-    // Verify habit appears
-    await expect(page.getByText('Exercise')).toBeVisible();
-
-    // Complete the habit
-    await dashboard.completeHabit('Exercise');
-
-    // Verify streak updated
-    await expect(page.getByTestId('streak-count')).toHaveText('1');
-  });
-
-  test('streak increments on consecutive days', async ({ page }) => {
-    // Test with seeded data for multi-day scenarios
-  });
+test('用户可以创建并完成习惯', async ({ page }) => {
+  const dashboard = new DashboardPage(page);
+  await dashboard.goto();
+  await dashboard.addHabit('运动');
+  await expect(page.getByText('运动')).toBeVisible();
 });
-```
-
-### Visual Testing
-
-```javascript
-test('dashboard matches snapshot', async ({ page }) => {
-  await page.goto('/');
-
-  // Wait for data to load
-  await expect(page.getByTestId('habit-list')).toBeVisible();
-
-  // Compare screenshot
-  await expect(page).toHaveScreenshot('dashboard.png', {
-    mask: [page.locator('.timestamp')],  // Mask dynamic content
-  });
-});
-```
-
-### Running E2E Tests
-
-```bash
-# Run all E2E tests
-npx playwright test
-
-# Run with UI mode (debugging)
-npx playwright test --ui
-
-# Run specific test file
-npx playwright test habits.spec.js
-
-# Update snapshots
-npx playwright test --update-snapshots
 ```
 
 ---
 
-## 12. Test Organization
+## 11. 测试组织
 
-### Directory Structure
+### 目录结构
 
 ```
 tests/
-├── conftest.py                 # Shared fixtures
-├── pytest.ini                  # Pytest configuration
+├── conftest.py           # 共享 fixtures
 ├── unit/
-│   ├── conftest.py             # Unit test fixtures
-│   ├── test_streak.py
-│   └── test_validators.py
+│   └── test_streak.py
 ├── integration/
-│   ├── conftest.py             # Integration fixtures (db, client)
-│   ├── test_api_habits.py
-│   └── test_api_completions.py
+│   └── test_api_habits.py
 └── e2e/
-    ├── playwright.config.js
     ├── pages/
-    │   └── DashboardPage.js
     └── habits.spec.js
-
-frontend/
-└── src/
-    ├── features/
-    │   └── habits/
-    │       └── __tests__/
-    │           ├── HabitCard.test.jsx
-    │           └── useHabits.test.js
-    └── test/
-        ├── setup.js
-        └── utils.jsx
 ```
 
-### Pytest Markers
+### Pytest 标记
 
 ```ini
 # pytest.ini
 [pytest]
 markers =
-    unit: Unit tests (fast, no I/O)
-    integration: Integration tests (database, API)
-    slow: Slow running tests
+    unit: 单元测试
+    integration: 集成测试
 ```
 
 ```python
 @pytest.mark.unit
 def test_calculate_streak():
     pass
-
-@pytest.mark.integration
-def test_api_creates_habit():
-    pass
 ```
 
 ```bash
-# Run by marker
-pytest -m unit
-pytest -m integration
-pytest -m "not slow"
+pytest -m unit          # 只运行单元测试
+pytest -m integration   # 只运行集成测试
 ```
 
-### Coverage Configuration
+### 覆盖率配置
 
 ```toml
 # pyproject.toml
 [tool.coverage.run]
 source = ["app"]
-omit = ["*/tests/*", "*/__pycache__/*"]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "if TYPE_CHECKING:",
-]
 fail_under = 80
 ```
 
 ```bash
-# Run with coverage
-pytest --cov=app --cov-report=html --cov-report=term-missing
+pytest --cov=app --cov-report=html
 ```
 
 ---
 
-## Quick Reference
+## 快速参考
 
-### Test Commands
+### 测试命令
 
 ```bash
-# Backend
-pytest                              # All tests
-pytest tests/unit                   # Unit tests only
-pytest tests/integration            # Integration tests only
-pytest -m unit                      # By marker
-pytest --cov=app                    # With coverage
-pytest -x                           # Stop on first failure
-pytest -v                           # Verbose output
+# 后端
+pytest                    # 全部测试
+pytest tests/unit         # 单元测试
+pytest --cov=app          # 带覆盖率
 
-# Frontend
-npm test                            # All tests
-npm test -- --watch                 # Watch mode
-npm test -- --coverage              # With coverage
+# 前端
+npm test                  # 全部测试
+npm test -- --coverage    # 带覆盖率
 
 # E2E
-npx playwright test                 # All E2E tests
-npx playwright test --ui            # UI mode
-npx playwright test --debug         # Debug mode
+npx playwright test       # 全部 E2E
+npx playwright test --ui  # UI 模式
 ```
 
-### Assertion Cheatsheet
+### 断言速查
 
 ```python
 # Pytest
 assert result == expected
-assert result is not None
-assert "text" in result
-assert len(items) == 3
 pytest.raises(ValueError)
 ```
 
@@ -874,26 +422,18 @@ pytest.raises(ValueError)
 // React Testing Library
 expect(element).toBeInTheDocument();
 expect(element).toBeVisible();
-expect(element).toHaveText('text');
-expect(element).toBeDisabled();
 expect(mockFn).toHaveBeenCalledWith(arg);
-```
 
-```javascript
 // Playwright
 await expect(locator).toBeVisible();
-await expect(locator).toHaveText('text');
 await expect(page).toHaveURL('/path');
-await expect(page).toHaveScreenshot();
 ```
 
 ---
 
-## Resources
+## 资源
 
-- [structlog Documentation](https://www.structlog.org/)
-- [pytest Documentation](https://docs.pytest.org/)
-- [FastAPI Testing](https://fastapi.tiangolo.com/tutorial/testing/)
-- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
-- [Playwright Documentation](https://playwright.dev/)
-- [Playwright MCP](https://github.com/microsoft/playwright-mcp)
+- [structlog 文档](https://www.structlog.org/)
+- [pytest 文档](https://docs.pytest.org/)
+- [React Testing Library](https://testing-library.com/)
+- [Playwright 文档](https://playwright.dev/)

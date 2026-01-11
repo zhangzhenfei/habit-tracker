@@ -1,78 +1,57 @@
-Run comprehensive validation of the Habit Tracker project.
+运行 Habit Tracker 项目的全面验证。
 
-Execute the following commands in sequence and report results:
+按顺序执行以下命令并报告结果：
 
-## 1. Backend Linting
+## 1. 后端 Lint
 
 ```bash
 cd backend && uv run ruff check .
 ```
 
-**Expected:** "All checks passed!" or no output (clean)
+**预期**：无输出（通过）
 
-## 2. Backend Tests
+## 2. 后端测试
 
 ```bash
 cd backend && uv run pytest -v
 ```
 
-**Expected:** All tests pass, execution time < 5 seconds
+**预期**：所有测试通过，执行时间 < 5 秒
 
-## 3. Backend Tests with Coverage
+## 3. 后端测试覆盖率
 
 ```bash
 cd backend && uv run pytest --cov=app --cov-report=term-missing
 ```
 
-**Expected:** Coverage >= 80% (configured in pyproject.toml)
+**预期**：覆盖率 >= 80%
 
-## 4. Frontend Build
+## 4. 前端构建
 
 ```bash
 cd frontend && npm run build
 ```
 
-**Expected:** Build completes successfully, outputs to `dist/` directory
+**预期**：构建成功，输出到 `dist/`
 
-## 5. Local Server Validation (Optional)
-
-If backend is not already running, start it:
+## 5. 本地服务验证（可选）
 
 ```bash
 cd backend && uv run uvicorn app.main:app --port 8000 &
-```
-
-Wait 2 seconds for startup, then test:
-
-```bash
-# Test habits endpoint
+sleep 2
 curl -s http://localhost:8000/api/habits | head -c 200
-
-# Check API docs
-curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" http://localhost:8000/docs
-```
-
-**Expected:** JSON response from habits endpoint, HTTP 200 from docs
-
-Stop the server if started:
-
-```bash
-# Windows
-taskkill /F /IM uvicorn.exe 2>nul || true
-
-# Linux/Mac
+curl -s -o /dev/null -w "HTTP: %{http_code}\n" http://localhost:8000/docs
 lsof -ti:8000 | xargs kill -9 2>/dev/null || true
 ```
 
-## 6. Summary Report
+**预期**：habits 端点返回 JSON，docs 返回 HTTP 200
 
-After all validations complete, provide a summary report with:
+## 6. 总结报告
 
-- Linting status
-- Tests passed/failed
-- Coverage percentage
-- Frontend build status
-- Any errors or warnings encountered
-- Overall health assessment (PASS/FAIL)
-
-**Format the report clearly with sections and status indicators**
+验证完成后提供：
+- Lint 状态
+- 测试通过/失败
+- 覆盖率百分比
+- 前端构建状态
+- 错误或警告
+- 整体健康评估（通过/失败）

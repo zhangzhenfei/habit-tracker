@@ -1,566 +1,356 @@
-# Habit Tracker - Product Requirements Document
+# Habit Tracker - 产品需求文档
 
-## 1. Executive Summary
+## 1. 概述
 
-Habit Tracker is a personal web application designed to help users build and maintain daily habits through simple tracking and streak-based motivation. The application provides a frictionless way to log daily habit completions, visualize progress over time, and stay motivated through streak tracking and completion rate metrics.
+Habit Tracker 是一个个人习惯追踪 Web 应用，帮助用户通过简单的追踪和连续打卡来建立和保持日常习惯。应用提供无摩擦的方式记录每日习惯完成情况，可视化进度，并通过连续天数和完成率指标保持动力。
 
-The core value proposition is simplicity: a local-first habit tracker without the complexity of account management, social features, or overwhelming customization options. Users can focus purely on building habits without distractions.
+核心价值：简洁。本地优先的习惯追踪器，无需账户管理、社交功能或复杂的自定义选项。用户可以专注于养成习惯，不受干扰。
 
-**MVP Goal:** Deliver a functional habit tracking application with daily completion logging, streak tracking, planned absence support, and calendar visualization—all running locally without authentication.
-
----
-
-## 2. Mission
-
-**Mission Statement:** Provide a simple, distraction-free tool for tracking daily habits and maintaining motivation through visible progress metrics.
-
-### Core Principles
-
-1. **Simplicity First** — Minimal features, maximum utility. Every feature must earn its place.
-2. **Instant Feedback** — Completing a habit should feel immediate and satisfying.
-3. **Motivation Over Guilt** — Show progress positively; completion rates alongside streaks prevent demoralization.
-4. **Local & Private** — No accounts, no cloud, no data leaving the user's machine.
-5. **Daily Focus** — Optimize for daily habits; avoid complexity of custom schedules.
+**MVP 目标**：交付一个功能完整的习惯追踪应用，支持每日完成记录、连续天数追踪、计划缺席和日历可视化——全部本地运行，无需认证。
 
 ---
 
-## 3. Target Users
+## 2. 使命
 
-### Primary Persona: Self-Motivated Individual
+**使命宣言**：提供简单、无干扰的工具，用于追踪日常习惯并通过可见的进度指标保持动力。
 
-- **Who:** A single user running the app locally for personal use
-- **Technical Comfort:** Comfortable running local dev servers or simple executables
-- **Goals:**
-  - Build consistent daily habits (exercise, reading, meditation, etc.)
-  - See visual proof of consistency to stay motivated
-  - Simple tracking without overhead of complex apps
-- **Pain Points:**
-  - Existing habit trackers are bloated with features they don't need
-  - Don't want to create accounts or share data
-  - Streak-only tracking feels punishing when life happens
+### 核心原则
+
+1. **简洁优先** — 最少功能，最大效用
+2. **即时反馈** — 完成习惯应感觉即时且令人满足
+3. **激励而非内疚** — 积极展示进度；完成率配合连续天数防止士气低落
+4. **本地私密** — 无账户，无云端，数据不离开用户机器
+5. **聚焦每日** — 优化日常习惯；避免自定义计划的复杂性
 
 ---
 
-## 4. MVP Scope
+## 3. 目标用户
 
-### In Scope
+### 主要画像：自我驱动的个人
 
-**Core Functionality**
-- ✅ Create, edit, and delete habits
-- ✅ Archive habits (soft delete, preserves history)
-- ✅ Mark habits as completed for a given day
-- ✅ Mark days as "skipped" (planned absence, doesn't break streak)
-- ✅ Undo completions/skips
-- ✅ View all habits due today with completion status
-- ✅ Current streak calculation per habit
-- ✅ Longest streak tracking (personal best preserved)
-- ✅ Completion rate percentage per habit
-- ✅ Monthly calendar view showing completion history
-
-**Technical**
-- ✅ Python backend with FastAPI
-- ✅ SQLite database for persistence
-- ✅ React frontend with Vite
-- ✅ Tailwind CSS for styling
-- ✅ RESTful API design
-- ✅ Local development setup (two terminal workflow)
-
-### Out of Scope
-
-**Deferred Features**
-- ❌ Non-daily habits (weekly, specific days)
-- ❌ Reminders/notifications
-- ❌ Categories/tags for habits
-- ❌ Grace period past midnight
-- ❌ Streak freezes (planned absence covers this use case)
-- ❌ Data export (CSV, JSON)
-- ❌ Dark mode
-- ❌ Mobile app (responsive web only)
-- ❌ Multiple users/authentication
-- ❌ Cloud sync
-- ❌ Gamification (badges, points)
+- **谁**：在本地运行应用的单一用户
+- **技术水平**：能够运行本地开发服务器或简单可执行文件
+- **目标**：
+  - 建立一致的日常习惯（运动、阅读、冥想等）
+  - 看到一致性的视觉证明以保持动力
+  - 简单追踪，无复杂应用的开销
+- **痛点**：
+  - 现有习惯追踪器功能臃肿
+  - 不想创建账户或分享数据
+  - 仅追踪连续天数在生活意外时感觉惩罚性
 
 ---
 
-## 5. User Stories
+## 4. MVP 范围
 
-### Primary User Stories
+### 包含
 
-1. **As a user, I want to create a new habit, so that I can start tracking it daily.**
-   - Example: Add "Morning meditation" with description "10 minutes of mindfulness"
+**核心功能**
+- ✅ 创建、编辑、删除习惯
+- ✅ 归档习惯（软删除，保留历史）
+- ✅ 标记习惯为某天已完成
+- ✅ 标记为"跳过"（计划缺席，不打断连续）
+- ✅ 撤销完成/跳过
+- ✅ 查看今日所有习惯及完成状态
+- ✅ 每个习惯的当前连续天数计算
+- ✅ 最长连续天数追踪（个人最佳保留）
+- ✅ 每个习惯的完成率百分比
+- ✅ 月度日历视图显示完成历史
 
-2. **As a user, I want to mark a habit as complete with a single tap, so that tracking is frictionless.**
-   - Example: Tap the checkbox next to "Exercise" and see immediate visual feedback
+**技术**
+- ✅ Python 后端 + FastAPI
+- ✅ SQLite 数据库持久化
+- ✅ React 前端 + Vite
+- ✅ Tailwind CSS 样式
+- ✅ RESTful API 设计
+- ✅ 本地开发设置（双终端工作流）
 
-3. **As a user, I want to see all my habits for today on one screen, so that I know what I need to do.**
-   - Example: Dashboard shows 5 habits with 3 completed, 2 remaining
+### 不包含
 
-4. **As a user, I want to see my current streak for each habit, so that I stay motivated to maintain it.**
-   - Example: "Reading: 14 day streak" displayed prominently
-
-5. **As a user, I want to mark a day as "skipped" for planned absences, so that vacations don't break my streak.**
-   - Example: Mark "Exercise" as skipped for travel days; streak continues when I return
-
-6. **As a user, I want to see my completion rate alongside my streak, so that one bad day doesn't feel like failure.**
-   - Example: "Exercise: 5 day streak | 87% completion rate"
-
-7. **As a user, I want to view a calendar of my habit history, so that I can see patterns over time.**
-   - Example: Monthly grid with green (completed), gray (skipped), red (missed) indicators
-
-8. **As a user, I want to archive old habits without losing their history, so that I can focus on current goals.**
-   - Example: Archive "Learn Spanish" but still see its historical data if needed
+**延后功能**
+- ❌ 非每日习惯（每周、特定日期）
+- ❌ 提醒/通知
+- ❌ 习惯分类/标签
+- ❌ 午夜后宽限期
+- ❌ 连续冻结（计划缺席已覆盖此用例）
+- ❌ 数据导出（CSV、JSON）
+- ❌ 深色模式
+- ❌ 移动应用（仅响应式 Web）
+- ❌ 多用户/认证
+- ❌ 云同步
+- ❌ 游戏化（徽章、积分）
 
 ---
 
-## 6. Core Architecture & Patterns
+## 5. 用户故事
 
-### High-Level Architecture
+1. **作为用户，我想创建新习惯，以便开始每日追踪。**
+   - 示例：添加"晨间冥想"，描述"10分钟正念"
+
+2. **作为用户，我想一键标记习惯完成，以便追踪无摩擦。**
+   - 示例：点击"运动"旁的复选框，看到即时视觉反馈
+
+3. **作为用户，我想在一个屏幕看到今日所有习惯，以便知道要做什么。**
+   - 示例：仪表板显示 5 个习惯，3 个已完成，2 个待完成
+
+4. **作为用户，我想看到每个习惯的当前连续天数，以便保持动力。**
+   - 示例："阅读：14 天连续"醒目显示
+
+5. **作为用户，我想为计划缺席标记"跳过"，以便假期不打断连续。**
+   - 示例：出差时标记"运动"为跳过；返回后连续继续
+
+6. **作为用户，我想看到完成率配合连续天数，以便一天失误不感觉失败。**
+   - 示例："运动：5 天连续 | 87% 完成率"
+
+7. **作为用户，我想查看习惯历史日历，以便看到时间模式。**
+   - 示例：月度网格，绿色（完成）、灰色（跳过）、红色（错过）
+
+8. **作为用户，我想归档旧习惯而不丢失历史，以便专注当前目标。**
+   - 示例：归档"学西班牙语"但仍可查看历史数据
+
+---
+
+## 6. 核心架构
+
+### 高层架构
 
 ```
 ┌─────────────────┐     HTTP/JSON      ┌─────────────────┐
 │                 │ ◄───────────────► │                 │
 │  React + Vite   │                    │    FastAPI      │
-│   (Frontend)    │                    │   (Backend)     │
-│   Port 5173     │                    │   Port 8000     │
+│   (前端)        │                    │   (后端)        │
+│   端口 5173     │                    │   端口 8000     │
 └─────────────────┘                    └────────┬────────┘
                                                 │
                                                 ▼
                                        ┌─────────────────┐
                                        │     SQLite      │
-                                       │   (Database)    │
+                                       │   (数据库)      │
                                        └─────────────────┘
 ```
 
-### Directory Structure
+### 目录结构
 
 ```
 habit-tracker/
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py
-│   │   ├── main.py              # FastAPI app entry point
-│   │   ├── database.py          # SQLite connection & session
-│   │   ├── models.py            # SQLAlchemy ORM models
-│   │   ├── schemas.py           # Pydantic request/response schemas
+│   │   ├── main.py              # FastAPI 应用入口
+│   │   ├── database.py          # SQLite 连接和会话
+│   │   ├── models.py            # SQLAlchemy ORM 模型
+│   │   ├── schemas.py           # Pydantic 请求/响应模式
 │   │   └── routers/
-│   │       ├── __init__.py
-│   │       ├── habits.py        # Habit CRUD endpoints
-│   │       └── completions.py   # Completion/skip endpoints
-│   ├── habits.db                # SQLite database file
-│   ├── pyproject.toml           # Python dependencies
-│   └── requirements.txt         # Pinned dependencies (optional)
+│   │       ├── habits.py        # 习惯 CRUD 端点
+│   │       └── completions.py   # 完成/跳过端点
+│   ├── habits.db                # SQLite 数据库文件
+│   └── pyproject.toml
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── components/          # Reusable UI components
-│   │   │   ├── HabitCard.jsx
-│   │   │   ├── HabitForm.jsx
-│   │   │   ├── Calendar.jsx
-│   │   │   └── StreakBadge.jsx
-│   │   ├── pages/               # Route-level components
-│   │   │   ├── Dashboard.jsx
-│   │   │   └── HabitDetail.jsx
-│   │   ├── api/                 # API client functions
-│   │   │   └── habits.js
+│   │   ├── components/          # 可复用 UI 组件
+│   │   ├── pages/               # 路由级组件
+│   │   ├── api/                 # API 客户端函数
 │   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css            # Tailwind imports
-│   ├── public/
-│   ├── index.html
-│   ├── package.json
-│   ├── vite.config.js
-│   └── tailwind.config.js
+│   │   └── main.jsx
+│   └── package.json
 │
-├── .gitignore
-├── .claude/
-│   └── PRD.md                   # This document
-└── README.md
+└── .claude/
+    └── PRD.md                   # 本文档
 ```
 
-### Key Design Patterns
+### 关键设计模式
 
-- **Repository Pattern** — Database operations abstracted in models/routers
-- **Pydantic Schemas** — Request validation and response serialization
-- **Component Composition** — React components are small and composable
-- **API Client Layer** — Frontend API calls centralized in `api/` directory
-- **Optimistic UI** — Update UI immediately, sync with server in background
+- **仓储模式** — 数据库操作抽象在 models/routers
+- **Pydantic 模式** — 请求验证和响应序列化
+- **组件组合** — React 组件小而可组合
+- **API 客户端层** — 前端 API 调用集中在 `api/` 目录
+- **乐观 UI** — 立即更新 UI，后台同步服务器
 
 ---
 
-## 7. Features
+## 7. 功能详情
 
-### 7.1 Habit Management
+### 7.1 习惯管理
 
-**Purpose:** Create, update, and manage habits
+**操作**：创建、编辑、归档、删除习惯
 
-**Operations:**
-- Create habit with name and optional description
-- Edit habit name/description
-- Archive habit (removes from today view, preserves history)
-- Delete habit permanently (with confirmation)
+**关键特性**：
+- 习惯名称必填，描述可选
+- 可选颜色选择器用于视觉区分
+- 归档习惯从主视图隐藏但可访问
 
-**Key Features:**
-- Habit name required, description optional
-- Optional color picker for visual distinction
-- Archived habits hidden from main view but accessible
+### 7.2 每日完成追踪
 
-### 7.2 Daily Completion Tracking
+**操作**：标记完成、标记跳过、撤销
 
-**Purpose:** Log daily habit completions
+**关键特性**：
+- 一键完成，即时视觉反馈
+- 三种状态：完成（绿）、跳过（灰）、未完成（默认）
+- 可修改今日和过去日期
+- 每个习惯每天一条完成记录
 
-**Operations:**
-- Mark habit as completed for today
-- Mark habit as skipped (planned absence)
-- Undo completion or skip
-- View completion status for any past date
+### 7.3 连续天数追踪
 
-**Key Features:**
-- Single-tap completion with instant visual feedback
-- Three states: completed (green), skipped (gray), incomplete (default)
-- Can modify today and past dates (for catching up)
-- Completions are date-based (one per habit per day)
+**计算**：
+- **当前连续**：连续完成天数（跳过不打断）
+- **最长连续**：个人最佳，连续打断后保留
+- **完成率**：(完成天数 / 习惯创建后总天数) × 100
 
-### 7.3 Streak Tracking
+### 7.4 日历视图
 
-**Purpose:** Motivate consistency through streak visibility
-
-**Calculations:**
-- **Current Streak:** Consecutive days completed (skipped days don't break streak)
-- **Longest Streak:** Personal best, preserved even after streak breaks
-- **Completion Rate:** (completed days / total days since habit created) × 100
-
-**Key Features:**
-- Streaks displayed prominently on habit cards
-- Completion rate shown alongside streak to reduce pressure
-- Longest streak celebrated when achieved
-
-### 7.4 Calendar View
-
-**Purpose:** Visualize habit history over time
-
-**Features:**
-- Monthly grid layout
-- Color-coded days: green (completed), gray (skipped), red (missed), default (future/not due)
-- Navigate between months
-- Tap day to view/edit completion status
-- Today's date highlighted
+**特性**：
+- 月度网格布局
+- 颜色编码：绿（完成）、灰（跳过）、红（错过）
+- 月份导航
+- 点击日期查看/编辑完成状态
 
 ---
 
-## 8. Technology Stack
+## 8. 技术栈
 
-### Backend
+### 后端
 
-| Component | Technology | Version |
-|-----------|------------|---------|
-| Framework | FastAPI | ^0.100.0 |
-| Server | Uvicorn | ^0.23.0 |
-| ORM | SQLAlchemy | ^2.0.0 |
-| Validation | Pydantic | ^2.0.0 |
-| Database | SQLite | 3.x (built-in) |
+| 组件 | 技术 |
+|-----|-----|
+| 框架 | FastAPI |
+| 服务器 | Uvicorn |
+| ORM | SQLAlchemy |
+| 验证 | Pydantic |
+| 数据库 | SQLite |
 
-### Frontend
+### 前端
 
-| Component | Technology | Version |
-|-----------|------------|---------|
-| Framework | React | ^18.x |
-| Build Tool | Vite | ^5.x |
-| Routing | react-router-dom | ^6.x |
-| Server State | TanStack Query | ^5.x |
-| Styling | Tailwind CSS | ^3.x |
-| Date Utilities | date-fns | ^3.x |
-| Icons | lucide-react | ^0.300.0 |
-
-### Development Tools
-
-| Tool | Purpose |
-|------|---------|
-| Python venv | Virtual environment |
-| npm/pnpm | Package management |
-| Ruff | Python linting/formatting |
-| ESLint | JavaScript linting |
+| 组件 | 技术 |
+|-----|-----|
+| 框架 | React 18 |
+| 构建 | Vite |
+| 路由 | react-router-dom |
+| 服务器状态 | TanStack Query |
+| 样式 | Tailwind CSS |
+| 日期工具 | date-fns |
 
 ---
 
-## 9. Security & Configuration
+## 9. API 规范
 
-### Security Scope
-
-**In Scope:**
-- ✅ Input validation on all API endpoints (Pydantic)
-- ✅ SQL injection prevention (SQLAlchemy ORM)
-- ✅ CORS configuration for local development
-
-**Out of Scope:**
-- ❌ Authentication/authorization (single local user)
-- ❌ HTTPS (local development only)
-- ❌ Rate limiting
-- ❌ CSRF protection
-
-### Configuration
-
-**Backend (environment variables):**
-```
-DATABASE_URL=sqlite:///./habits.db
-CORS_ORIGINS=http://localhost:5173
-```
-
-**Frontend (vite.config.js):**
-```javascript
-server: {
-  proxy: {
-    '/api': 'http://localhost:8000'
-  }
-}
-```
-
-### Deployment
-
-MVP runs locally via development servers:
-- Backend: `uvicorn app.main:app --reload`
-- Frontend: `npm run dev`
-
----
-
-## 10. API Specification
-
-### Base URL
+### 基础 URL
 ```
 http://localhost:8000/api
 ```
 
-### Endpoints
+### 习惯端点
 
-#### Habits
+**GET /api/habits** - 列出所有习惯及统计
 
-**GET /api/habits**
-List all habits with calculated stats.
-
-Response:
+**POST /api/habits** - 创建习惯
 ```json
-{
-  "habits": [
-    {
-      "id": 1,
-      "name": "Exercise",
-      "description": "30 minutes of activity",
-      "color": "#10B981",
-      "currentStreak": 5,
-      "longestStreak": 14,
-      "completionRate": 0.87,
-      "completedToday": true,
-      "createdAt": "2025-01-01T00:00:00Z",
-      "archivedAt": null
-    }
-  ]
-}
+{ "name": "阅读", "description": "每天20分钟", "color": "#3B82F6" }
 ```
 
-**POST /api/habits**
-Create a new habit.
+**PUT /api/habits/{id}** - 更新习惯
 
-Request:
+**DELETE /api/habits/{id}** - 永久删除
+
+**PATCH /api/habits/{id}/archive** - 归档习惯
+
+### 完成端点
+
+**POST /api/habits/{id}/complete** - 标记完成
 ```json
-{
-  "name": "Read",
-  "description": "Read for 20 minutes",
-  "color": "#3B82F6"
-}
+{ "date": "2025-01-04", "notes": "今天跑了5公里" }
 ```
 
-**PUT /api/habits/{id}**
-Update a habit.
-
-**DELETE /api/habits/{id}**
-Permanently delete a habit.
-
-**PATCH /api/habits/{id}/archive**
-Archive a habit.
-
-#### Completions
-
-**POST /api/habits/{id}/complete**
-Mark habit as completed for a date.
-
-Request:
+**POST /api/habits/{id}/skip** - 标记跳过
 ```json
-{
-  "date": "2025-01-04",
-  "notes": "Ran 5k today"
-}
+{ "date": "2025-01-04", "reason": "出差" }
 ```
 
-**POST /api/habits/{id}/skip**
-Mark habit as skipped for a date.
+**DELETE /api/habits/{id}/completions/{date}** - 删除记录
 
-Request:
-```json
-{
-  "date": "2025-01-04",
-  "reason": "Traveling"
-}
+**GET /api/habits/{id}/completions** - 获取完成历史
 ```
-
-**DELETE /api/habits/{id}/completions/{date}**
-Remove a completion or skip entry.
-
-**GET /api/habits/{id}/completions**
-Get completion history for a habit.
-
-Query params: `?start=2025-01-01&end=2025-01-31`
-
-Response:
-```json
-{
-  "completions": [
-    {
-      "date": "2025-01-01",
-      "status": "completed",
-      "notes": null
-    },
-    {
-      "date": "2025-01-02",
-      "status": "skipped",
-      "notes": "Sick day"
-    }
-  ]
-}
+?start=2025-01-01&end=2025-01-31
 ```
 
 ---
 
-## 11. Success Criteria
+## 10. 成功标准
 
-### MVP Success Definition
+### MVP 成功定义
 
-The MVP is successful when a user can:
-1. Add a new habit and see it on their dashboard
-2. Complete the habit daily and watch their streak grow
-3. Skip a day for planned absence without losing their streak
-4. View their completion history on a calendar
-5. Feel motivated by visible progress metrics
+用户可以：
+1. 添加新习惯并在仪表板看到
+2. 每日完成习惯并看到连续增长
+3. 计划缺席时跳过而不丢失连续
+4. 在日历上查看完成历史
+5. 通过可见进度指标保持动力
 
-### Functional Requirements
+### 功能要求
 
-- ✅ Create, edit, delete, and archive habits
-- ✅ Mark habits complete or skipped with single interaction
-- ✅ Calculate and display current streak accurately
-- ✅ Preserve longest streak after streak breaks
-- ✅ Display completion rate as percentage
-- ✅ Render monthly calendar with completion history
-- ✅ Persist all data across browser sessions (SQLite)
-- ✅ Handle date boundaries correctly (local time)
+- ✅ 习惯 CRUD 和归档
+- ✅ 一键完成或跳过
+- ✅ 准确计算当前连续
+- ✅ 连续打断后保留最长连续
+- ✅ 显示完成率百分比
+- ✅ 渲染月度日历
+- ✅ 数据跨会话持久化
+- ✅ 正确处理日期边界
 
-### Quality Indicators
+### 质量指标
 
-- Page load under 1 second
-- Completion action feedback under 100ms
-- No data loss on normal usage
-- Works in Chrome, Firefox, Safari
-- Responsive layout (desktop + mobile browsers)
-
----
-
-## 12. Implementation Phases
-
-### Phase 1: Backend Foundation
-
-**Goal:** Functional API with database persistence
-
-**Deliverables:**
-- ✅ Project structure and Python virtual environment
-- ✅ SQLite database with habits and completions tables
-- ✅ CRUD endpoints for habits
-- ✅ Completion/skip endpoints
-- ✅ Streak calculation logic
-- ✅ API tested via Swagger UI
-
-**Validation:** Can create habits and log completions via API docs
+- 页面加载 < 1 秒
+- 完成操作反馈 < 100ms
+- 正常使用无数据丢失
+- 支持 Chrome、Firefox、Safari
+- 响应式布局（桌面 + 移动浏览器）
 
 ---
 
-### Phase 2: Frontend Foundation
+## 11. 实现阶段
 
-**Goal:** Basic React app displaying habits
+### 阶段1：后端基础
+- ✅ 项目结构和 Python 虚拟环境
+- ✅ SQLite 数据库（habits 和 completions 表）
+- ✅ 习惯 CRUD 端点
+- ✅ 完成/跳过端点
+- ✅ 连续计算逻辑
 
-**Deliverables:**
-- ✅ Vite + React project scaffolded
-- ✅ Tailwind CSS configured
-- ✅ API client with TanStack Query
-- ✅ Dashboard page with habit list
-- ✅ Habit creation form
-- ✅ Completion toggle functionality
+### 阶段2：前端基础
+- ✅ Vite + React 项目
+- ✅ Tailwind CSS 配置
+- ✅ TanStack Query API 客户端
+- ✅ 仪表板页面
+- ✅ 习惯创建表单
+- ✅ 完成切换功能
 
-**Validation:** Can add habits and mark them complete in browser
+### 阶段3：核心功能
+- ✅ 连续和完成率显示
+- ✅ 跳过功能
+- ✅ 编辑和归档流程
+- ✅ 日历视图组件
+- ✅ 习惯详情页
 
----
-
-### Phase 3: Core Features
-
-**Goal:** Full MVP functionality
-
-**Deliverables:**
-- ✅ Streak and completion rate display
-- ✅ Skip functionality for planned absences
-- ✅ Edit and archive habit flows
-- ✅ Calendar view component
-- ✅ Habit detail page with history
-
-**Validation:** All user stories achievable
-
----
-
-### Phase 4: Polish
-
-**Goal:** Production-ready MVP
-
-**Deliverables:**
-- ✅ Loading and error states
-- ✅ Empty states (no habits yet)
-- ✅ Confirmation dialogs for destructive actions
-- ✅ Mobile-responsive layout
-- ✅ README with setup instructions
-
-**Validation:** Smooth user experience, no rough edges
+### 阶段4：打磨
+- ✅ 加载和错误状态
+- ✅ 空状态（无习惯时）
+- ✅ 破坏性操作确认对话框
+- ✅ 移动响应式布局
 
 ---
 
-## 13. Future Considerations
+## 12. 风险与缓解
 
-### Post-MVP Enhancements
-
-- **Non-daily habits** — Weekly or specific-day schedules
-- **Data export** — CSV/JSON export of all data
-- **Dark mode** — System preference detection
-- **Reminders** — Browser notifications (with permission)
-- **Grace period** — 2-4 hours past midnight to complete
-- **Habit templates** — Pre-defined habits to choose from
-- **Weekly/monthly reports** — Summary of progress
-
-### Technical Improvements
-
-- **Single executable** — Package as standalone app (PyInstaller + embedded frontend)
-- **Desktop app** — Electron or Tauri wrapper
-- **PWA support** — Installable web app with offline capability
-- **Database migrations** — Alembic for schema evolution
+| 风险 | 影响 | 缓解 |
+|-----|-----|-----|
+| 连续计算 bug | 用户失去信任 | 全面单元测试 |
+| 数据丢失 | 应用价值归零 | SQLite 稳健；文档备份流程 |
+| 日期/时区问题 | 完成记录在错误日期 | 一致的日期处理（date-fns） |
+| 范围蔓延 | MVP 无法交付 | 严格遵守 MVP 范围 |
 
 ---
 
-## 14. Risks & Mitigations
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| **Streak calculation bugs** | Users lose trust if streaks are wrong | Comprehensive unit tests for streak logic; manual testing with edge cases |
-| **Data loss** | Complete failure of app value | SQLite is robust; document backup procedures; future: export feature |
-| **Date/timezone issues** | Completions recorded on wrong day | Use consistent date handling (date-fns); test across timezones |
-| **Scope creep** | MVP never ships | Strict adherence to MVP scope; defer features explicitly |
-| **Poor mobile UX** | App unusable on primary device | Mobile-first design; test on real devices early |
-
----
-
-## 15. Appendix
-
-### Database Schema
+## 13. 数据库模式
 
 ```sql
 CREATE TABLE habits (
@@ -575,8 +365,8 @@ CREATE TABLE habits (
 CREATE TABLE completions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     habit_id INTEGER NOT NULL,
-    completed_date TEXT NOT NULL,  -- YYYY-MM-DD format
-    status TEXT NOT NULL DEFAULT 'completed',  -- 'completed' or 'skipped'
+    completed_date TEXT NOT NULL,  -- YYYY-MM-DD 格式
+    status TEXT NOT NULL DEFAULT 'completed',  -- 'completed' 或 'skipped'
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE,
@@ -586,12 +376,19 @@ CREATE TABLE completions (
 CREATE INDEX idx_completions_habit_date ON completions(habit_id, completed_date);
 ```
 
-### Key Dependencies
+---
 
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [SQLAlchemy 2.0 Documentation](https://docs.sqlalchemy.org/)
-- [React Documentation](https://react.dev/)
-- [Vite Documentation](https://vitejs.dev/)
-- [Tailwind CSS Documentation](https://tailwindcss.com/)
-- [TanStack Query Documentation](https://tanstack.com/query/latest)
-- [date-fns Documentation](https://date-fns.org/)
+## 14. 未来考虑
+
+### MVP 后增强
+- 非每日习惯（每周或特定日期）
+- 数据导出（CSV/JSON）
+- 深色模式
+- 浏览器通知提醒
+- 每周/月度报告
+
+### 技术改进
+- 单可执行文件打包（PyInstaller）
+- 桌面应用（Electron/Tauri）
+- PWA 支持（离线能力）
+- 数据库迁移（Alembic）

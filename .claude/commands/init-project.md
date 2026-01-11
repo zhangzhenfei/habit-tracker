@@ -1,65 +1,54 @@
-# Initialize Project
+# 初始化项目
 
-Set up and start the Habit Tracker application locally.
+本地设置并启动 Habit Tracker 应用。
 
-## 1. Install Backend Dependencies
+## 1. 安装后端依赖
 
 ```bash
 cd backend && uv sync
 ```
 
-Installs all Python packages including dev dependencies (pytest, ruff, httpx).
+安装所有 Python 包，包括开发依赖（pytest, ruff, httpx）。
 
-## 2. Install Frontend Dependencies
+## 2. 安装前端依赖
 
 ```bash
 cd frontend && npm install
 ```
 
-Installs React, Vite, TanStack Query, Tailwind CSS, and other frontend packages.
+安装 React、Vite、TanStack Query、Tailwind CSS 等前端包。
 
-## 3. Start Backend Server
+## 3. 启动后端服务
 
 ```bash
 cd backend && uv run uvicorn app.main:app --reload --port 8000
 ```
 
-Starts FastAPI server with hot-reload on port 8000. SQLite database (habits.db) is created automatically on first run.
+在端口 8000 启动 FastAPI 服务（热重载）。首次运行自动创建 SQLite 数据库。
 
-## 4. Start Frontend Server (new terminal)
+## 4. 启动前端服务（新终端）
 
 ```bash
 cd frontend && npm run dev
 ```
 
-Starts Vite dev server on port 5173.
+在端口 5173 启动 Vite 开发服务器。
 
-## 5. Validate Setup
-
-Check that everything is working:
+## 5. 验证设置
 
 ```bash
-# Test API health
 curl -s http://localhost:8000/api/habits
-
-# Check Swagger docs load
-curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" http://localhost:8000/docs
+curl -s -o /dev/null -w "HTTP: %{http_code}\n" http://localhost:8000/docs
 ```
 
-## Access Points
+## 访问地址
 
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:8000
-- **API Docs (Swagger)**: http://localhost:8000/docs
+- **前端**: http://localhost:5173
+- **后端 API**: http://localhost:8000
+- **API 文档**: http://localhost:8000/docs
 
-## Cleanup
+## 备注
 
-To stop services:
-- Backend: Ctrl+C in terminal
-- Frontend: Ctrl+C in terminal
-
-## Notes
-
-- No environment file (.env) required - uses SQLite with sensible defaults
-- Database file created at `backend/habits.db` on first API call
-- Backend and frontend can be started in any order
+- 无需 .env 文件，使用 SQLite 默认配置
+- 数据库文件：`backend/habits.db`
+- 后端前端可任意顺序启动

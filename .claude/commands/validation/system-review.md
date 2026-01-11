@@ -1,189 +1,107 @@
 ---
-description: Analyze implementation against plan for process improvements
+description: 分析实现与计划的对比以改进流程
 ---
 
-# System Review
+# 系统审查
 
-Perform a meta-level analysis of how well the implementation followed the plan and identify process improvements.
+对实现与计划的元级分析，识别流程改进。
 
-## Purpose
+## 目的
 
-**System review is NOT code review.** You're not looking for bugs in the code - you're looking for bugs in the process.
+**系统审查不是代码审查**。不是找代码 bug，而是找流程 bug。
 
-**Your job:**
+**你的工作**：
+- 分析计划遵循和偏离模式
+- 识别哪些偏离合理/有问题
+- 发现流程改进
+- 建议更新 CLAUDE.md、计划模板、命令
 
-- Analyze plan adherence and divergence patterns
-- Identify which divergences were justified vs problematic
-- Surface process improvements that prevent future issues
-- Suggest updates to Layer 1 assets (CLAUDE.md, plan templates, commands)
+**理念**：
+- 好的偏离揭示计划局限 → 改进规划
+- 坏的偏离揭示需求不清 → 改进沟通
+- 重复问题揭示缺少自动化 → 创建命令
 
-**Philosophy:**
+## 输入
 
-- Good divergence reveals plan limitations → improve planning
-- Bad divergence reveals unclear requirements → improve communication
-- Repeated issues reveal missing automation → create commands
+分析四个关键产物：
+- **Plan 命令**：`.claude/commands/plan-feature.md`
+- **生成的计划**：$1
+- **Execute 命令**：`.claude/commands/execute.md`
+- **执行报告**：$2
 
-## Context & Inputs
+## 分析流程
 
-You will analyze four key artifacts:
+### 步骤1：理解计划方案
+从计划提取：功能、架构、验证步骤、引用模式
 
-**Plan Command:**
-Read this to understand the planning process and what instructions guide plan creation.
-.claude/commands/plan-feature.md
+### 步骤2：理解实际实现
+从执行报告提取：实现内容、偏离、挑战、跳过项
 
-**Generated Plan:**
-Read this to understand what the agent was SUPPOSED to do.
-Plan file: $1
+### 步骤3：分类每个偏离
 
-**Execute Command:**
-Read this to understand the execution process and what instructions guide implementation.
-.claude/commands/execute.md
+**好的偏离 ✅**：
+- 计划假设不存在的东西
+- 发现更好模式
+- 需要性能优化
+- 发现安全问题
 
-**Execution Report:**
-Read this to understand what the agent ACTUALLY did and why.
-Execution report: $2
+**坏的偏离 ❌**：
+- 忽略计划约束
+- 创建新架构而非遵循现有模式
+- 走捷径引入技术债
+- 误解需求
 
-## Analysis Workflow
+### 步骤4：追溯根因
+- 计划不清？
+- 缺少上下文？
+- 缺少验证？
 
-### Step 1: Understand the Planned Approach
+### 步骤5：生成流程改进
+- CLAUDE.md 更新
+- Plan 命令更新
+- 新命令
+- 验证补充
 
-Read the generated plan ($1) and extract:
+## 输出格式
 
-- What features were planned?
-- What architecture was specified?
-- What validation steps were defined?
-- What patterns were referenced?
+保存到：`.agents/system-reviews/[功能名]-review.md`
 
-### Step 2: Understand the Actual Implementation
+### 报告结构
 
-Read the execution report ($2) and extract:
+#### 元信息
+- 审查计划：[$1 路径]
+- 执行报告：[$2 路径]
 
-- What was implemented?
-- What diverged from the plan?
-- What challenges were encountered?
-- What was skipped and why?
+#### 整体对齐分数：__/10
+- 10：完美遵循
+- 7-9：小偏离合理
+- 4-6：偏离混合
+- 1-3：重大问题偏离
 
-### Step 3: Classify Each Divergence
-
-For each divergence identified in the execution report, classify as:
-
-**Good Divergence ✅** (Justified):
-
-- Plan assumed something that didn't exist in the codebase
-- Better pattern discovered during implementation
-- Performance optimization needed
-- Security issue discovered that required different approach
-
-**Bad Divergence ❌** (Problematic):
-
-- Ignored explicit constraints in plan
-- Created new architecture instead of following existing patterns
-- Took shortcuts that introduce tech debt
-- Misunderstood requirements
-
-### Step 4: Trace Root Causes
-
-For each problematic divergence, identify the root cause:
-
-- Was the plan unclear, where, why?
-- Was context missing, where, why?
-- Was validation missing, where, why?
-- Was manual step repeated, where, why?
-
-### Step 5: Generate Process Improvements
-
-Based on patterns across divergences, suggest:
-
-- **CLAUDE.md updates:** Universal patterns or anti-patterns to document
-- **Plan command updates:** Instructions that need clarification or missing steps
-- **New commands:** Manual processes that should be automated
-- **Validation additions:** Checks that would catch issues earlier
-
-## Output Format
-
-Save your analysis to: `.agents/system-reviews/[feature-name]-review.md`
-
-### Report Structure:
-
-#### Meta Information
-
-- Plan reviewed: [path to $1]
-- Execution report: [path to $2]
-- Date: [current date]
-
-#### Overall Alignment Score: \_\_/10
-
-Scoring guide:
-
-- 10: Perfect adherence, all divergences justified
-- 7-9: Minor justified divergences
-- 4-6: Mix of justified and problematic divergences
-- 1-3: Major problematic divergences
-
-#### Divergence Analysis
-
-For each divergence from the execution report:
-
+#### 偏离分析
 ```yaml
-divergence: [what changed]
-planned: [what plan specified]
-actual: [what was implemented]
-reason: [agent's stated reason from report]
+divergence: [变更内容]
+planned: [计划内容]
+actual: [实际实现]
 classification: good ✅ | bad ❌
-justified: yes/no
-root_cause: [unclear plan | missing context | etc]
+root_cause: [计划不清 | 缺少上下文 | 等]
 ```
 
-#### Pattern Compliance
+#### 系统改进行动
 
-Assess adherence to documented patterns:
+**更新 CLAUDE.md**：
+- [ ] 记录 [模式 X]
+- [ ] 添加 [Y] 反模式警告
 
-- [ ] Followed codebase architecture
-- [ ] Used documented patterns (from CLAUDE.md)
-- [ ] Applied testing patterns correctly
-- [ ] Met validation requirements
+**更新 Plan 命令**：
+- [ ] 添加 [缺失步骤]
+- [ ] 澄清 [模糊指令]
 
-#### System Improvement Actions
+**创建新命令**：
+- [ ] `/[命令名]` 用于 [重复手动流程]
 
-Based on analysis, recommend specific actions:
+## 重要
 
-**Update CLAUDE.md:**
-
-- [ ] Document [pattern X] discovered during implementation
-- [ ] Add anti-pattern warning for [Y]
-- [ ] Clarify [technology constraint Z]
-
-**Update Plan Command ($1):**
-
-- [ ] Add instruction for [missing step]
-- [ ] Clarify [ambiguous instruction]
-- [ ] Add validation requirement for [X]
-
-**Create New Command:**
-
-- [ ] `/[command-name]` for [manual process repeated 3+ times]
-
-**Update Execute Command ($3):**
-
-- [ ] Add [validation step] to execution checklist
-
-#### Key Learnings
-
-**What worked well:**
-
-- [specific things that went smoothly]
-
-**What needs improvement:**
-
-- [specific process gaps identified]
-
-**For next implementation:**
-
-- [concrete improvements to try]
-
-## Important
-
-- **Be specific:** Don't say "plan was unclear" - say "plan didn't specify which auth pattern to use"
-- **Focus on patterns:** One-off issues aren't actionable. Look for repeated problems.
-- **Action-oriented:** Every finding should have a concrete asset update suggestion
-- **Suggest improvements:** Don't just analyze - actually suggest the text to add to CLAUDE.md or commands
+- **具体**：不说"计划不清"，说"计划未指定用哪种认证模式"
+- **关注模式**：一次性问题不可操作，找重复问题
+- **行动导向**：每个发现都应有具体资产更新建议

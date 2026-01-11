@@ -1,18 +1,18 @@
 ---
-description: Process to fix bugs found in manual/AI code review
+description: 修复代码审查发现的问题
 ---
 
-I ran/performed a code review and found these issues:
+我进行了代码审查，发现以下问题：
 
-Code-review (file or description of issues): $1
+代码审查（文件或问题描述）：$1
 
-Please fix these issues one by one. If the Code-review is a file read the entire file first to understand all of the issue(s) presented there.
+请逐一修复这些问题。如果是文件，先完整阅读以理解所有问题。
 
-Scope: $2
+范围：$2
 
-For each fix:
-1. Explain what was wrong
-2. Show the fix
-3. Create and run relevant tests to verify
+对每个修复：
+1. 解释问题所在
+2. 展示修复内容
+3. 创建并运行相关测试验证
 
-After all fixes, run the validate command (see commands/validate.md) to finalize your fixes.
+所有修复完成后，运行 validate 命令完成验证。

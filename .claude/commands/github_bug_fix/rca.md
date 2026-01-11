@@ -1,220 +1,123 @@
 ---
-description: Analyze and document root cause for a GitHub issue
+description: 分析并记录 GitHub issue 的根本原因
 argument-hint: [github-issue-id]
 ---
 
-# Root Cause Analysis: GitHub Issue #$ARGUMENTS
+# 根因分析: GitHub Issue #$ARGUMENTS
 
-## Objective
+## 目标
 
-Investigate GitHub issue #$ARGUMENTS from this repository, identify the root cause, and document findings for future implementation.
+调查本仓库的 GitHub issue #$ARGUMENTS，识别根本原因，记录发现以供后续实现。
 
-**Prerequisites:**
-- Working in a local Git repository with GitHub origin
-- GitHub CLI installed and authenticated (`gh auth status`)
-- Valid GitHub issue ID from this repository
+**前提条件**：
+- 本地 Git 仓库有 GitHub origin
+- GitHub CLI 已安装并认证
+- 有效的 GitHub issue ID
 
-## Investigation Process
+## 调查流程
 
-### 1. Fetch GitHub Issue Details
-
-**Use GitHub CLI to retrieve issue information:**
+### 1. 获取 Issue 详情
 
 ```bash
 gh issue view $ARGUMENTS
 ```
 
-This fetches:
-- Issue title and description
-- Reporter and creation date
-- Labels and status
-- Comments and discussion
+获取：标题、描述、报告者、标签、状态、评论
 
-### 2. Search Codebase
+### 2. 搜索代码库
 
-**Identify relevant code:**
-- Search for components mentioned in issue
-- Find related functions, classes, or modules
-- Check similar implementations
-- Look for patterns or recent changes
+- 搜索 issue 中提到的组件
+- 查找相关函数、类、模块
+- 检查类似实现
+- 查找错误消息、函数名
 
-Use grep/search to find:
-- Error messages from issue
-- Related function names
-- Component identifiers
+### 3. 查看近期历史
 
-### 3. Review Recent History
+```bash
+git log --oneline -20 -- [相关路径]
+```
 
-Check recent changes to affected areas:
-!`git log --oneline -20 -- [relevant-paths]`
+查找：近期修改、相关修复、可能引入问题的重构
 
-Look for:
-- Recent modifications to affected code
-- Related bug fixes
-- Refactorings that might have introduced the issue
+### 4. 调查根因
 
-### 4. Investigate Root Cause
+分析代码确定：
+- 实际 bug 是什么？
+- 为什么发生？
+- 是逻辑错误、边界情况还是缺少验证？
 
-**Analyze the code to determine:**
-- What is the actual bug or issue?
-- Why is it happening?
-- What was the original intent?
-- Is this a logic error, edge case, or missing validation?
-- Are there related issues or symptoms?
+考虑：输入验证失败、未处理的边界情况、竞态条件、错误假设、缺少错误处理
 
-**Consider:**
-- Input validation failures
-- Edge cases not handled
-- Race conditions or timing issues
-- Incorrect assumptions
-- Missing error handling
-- Integration issues between components
+### 5. 评估影响
 
-### 5. Assess Impact
+- 影响范围多大？
+- 哪些功能受影响？
+- 有无变通方案？
+- 严重程度？
+- 是否涉及数据损坏或安全问题？
 
-**Determine:**
-- How widespread is this issue?
-- What features are affected?
-- Are there workarounds?
-- What is the severity?
-- Could this cause data corruption or security issues?
+### 6. 提出修复方案
 
-### 6. Propose Fix Approach
+- 需要改什么？
+- 修改哪些文件？
+- 修复策略？
+- 需要什么测试？
 
-**Design the solution:**
-- What needs to be changed?
-- Which files will be modified?
-- What is the fix strategy?
-- Are there alternative approaches?
-- What testing is needed?
-- Are there any risks or side effects?
+## 输出：创建 RCA 文档
 
-## Output: Create RCA Document
+保存到：`docs/rca/issue-$ARGUMENTS.md`
 
-Save analysis as: `docs/rca/issue-$ARGUMENTS.md`
-
-### Required RCA Document Structure
+### RCA 文档结构
 
 ```markdown
-# Root Cause Analysis: GitHub Issue #$ARGUMENTS
+# 根因分析: GitHub Issue #$ARGUMENTS
 
-## Issue Summary
+## Issue 摘要
+- **ID**: #$ARGUMENTS
+- **标题**: [标题]
+- **严重程度**: [严重/高/中/低]
 
-- **GitHub Issue ID**: #$ARGUMENTS
-- **Issue URL**: [Link to GitHub issue]
-- **Title**: [Issue title from GitHub]
-- **Reporter**: [GitHub username]
-- **Severity**: [Critical/High/Medium/Low]
-- **Status**: [Current GitHub issue status]
+## 问题描述
+**预期行为**：[应该发生什么]
+**实际行为**：[实际发生什么]
 
-## Problem Description
+## 复现步骤
+1. [步骤1]
+2. [步骤2]
 
-[Clear description of the issue]
+## 根因
 
-**Expected Behavior:**
-[What should happen]
+### 受影响组件
+- **文件**: [文件路径列表]
+- **函数/类**: [具体代码位置]
 
-**Actual Behavior:**
-[What actually happens]
+### 分析
+[根因详细解释]
 
-**Symptoms:**
-- [List observable symptoms]
+**代码位置**：
+[文件路径:行号]
 
-## Reproduction
+## 影响评估
+- **范围**: [影响范围]
+- **受影响功能**: [功能列表]
 
-**Steps to Reproduce:**
-1. [Step 1]
-2. [Step 2]
-3. [Observe issue]
+## 修复方案
 
-**Reproduction Verified:** [Yes/No]
+### 修复策略
+[高层修复方法]
 
-## Root Cause
+### 要修改的文件
+1. **[文件路径]** - 改动：[内容] - 原因：[原因]
 
-### Affected Components
+### 测试要求
+1. [测试用例1]
+2. [测试用例2]
 
-- **Files**: [List of affected files with paths]
-- **Functions/Classes**: [Specific code locations]
-- **Dependencies**: [Any external deps involved]
+**验证命令**：
+[具体命令]
 
-### Analysis
-
-[Detailed explanation of the root cause]
-
-**Why This Occurs:**
-[Explanation of the underlying issue]
-
-**Code Location:**
-```
-[File path:line number]
-[Relevant code snippet showing the issue]
-```
-
-### Related Issues
-
-- [Any related issues or patterns]
-
-## Impact Assessment
-
-**Scope:**
-- [How widespread is this?]
-
-**Affected Features:**
-- [List affected features]
-
-**Severity Justification:**
-[Why this severity level]
-
-**Data/Security Concerns:**
-[Any data corruption or security implications]
-
-## Proposed Fix
-
-### Fix Strategy
-
-[High-level approach to fixing]
-
-### Files to Modify
-
-1. **[file-path]**
-   - Changes: [What needs to change]
-   - Reason: [Why this change fixes it]
-
-2. **[file-path]**
-   - Changes: [What needs to change]
-   - Reason: [Why this change fixes it]
-
-### Alternative Approaches
-
-[Other possible solutions and why the proposed approach is better]
-
-### Risks and Considerations
-
-- [Any risks with this fix]
-- [Side effects to watch for]
-- [Breaking changes if any]
-
-### Testing Requirements
-
-**Test Cases Needed:**
-1. [Test case 1 - verify fix works]
-2. [Test case 2 - verify no regression]
-3. [Test case 3 - edge cases]
-
-**Validation Commands:**
-```bash
-[Exact commands to verify fix]
-```
-
-## Implementation Plan
-
-[Brief overview of implementation steps]
-
-This RCA document should be used by `/implement-fix` command.
-
-## Next Steps
-
-1. Review this RCA document
-2. Run: `/implement-fix $ARGUMENTS` to implement the fix
-3. Run: `/commit` after implementation complete
+## 下一步
+1. 审查此 RCA 文档
+2. 运行 `/implement-fix $ARGUMENTS` 实现修复
+3. 完成后运行 `/commit`
 ```

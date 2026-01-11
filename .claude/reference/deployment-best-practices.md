@@ -1,118 +1,75 @@
-# Deployment Best Practices Reference
+# 部署最佳实践
 
-A concise reference guide for deploying Python/FastAPI + React applications.
+## 目录
 
----
-
-## Table of Contents
-
-1. [Local Development](#1-local-development)
-2. [Production Builds](#2-production-builds)
-3. [Backend Deployment](#3-backend-deployment)
-4. [Frontend Deployment](#4-frontend-deployment)
+1. [本地开发](#1-本地开发)
+2. [生产构建](#2-生产构建)
+3. [后端部署](#3-后端部署)
+4. [前端部署](#4-前端部署)
 5. [Docker](#5-docker)
-6. [Reverse Proxy (Nginx)](#6-reverse-proxy-nginx)
-7. [Environment & Configuration](#7-environment--configuration)
-8. [Database in Production](#8-database-in-production)
-9. [Monitoring & Logging](#9-monitoring--logging)
-10. [Cloud Platforms](#10-cloud-platforms)
-11. [Security](#11-security)
-12. [Single Binary Deployment](#12-single-binary-deployment)
+6. [反向代理](#6-反向代理)
+7. [环境配置](#7-环境配置)
+8. [生产数据库](#8-生产数据库)
+9. [监控日志](#9-监控日志)
+10. [云平台](#10-云平台)
+11. [安全](#11-安全)
 
 ---
 
-## 1. Local Development
+## 1. 本地开发
 
-### Running Frontend and Backend
-
-**Two Terminal Approach:**
+### 双终端运行
 
 ```bash
-# Terminal 1: Backend
+# 终端1：后端
 cd backend
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 
-# Terminal 2: Frontend
+# 终端2：前端
 cd frontend
 npm install
-npm run dev  # Runs on port 5173
+npm run dev  # 端口 5173
 ```
 
-### Vite Proxy Configuration
-
-Avoid CORS issues by proxying API requests through Vite:
+### Vite 代理配置
 
 ```javascript
 // frontend/vite.config.js
 export default defineConfig({
-  plugins: [react()],
   server: {
     proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
+      '/api': { target: 'http://localhost:8000', changeOrigin: true },
     },
   },
 });
 ```
 
-Now frontend code can use relative paths:
-```javascript
-fetch('/api/habits')  // Proxied to http://localhost:8000/api/habits
-```
-
-### Hot Reloading
-
-- **Backend**: `uvicorn --reload` watches for file changes
-- **Frontend**: Vite HMR (Hot Module Replacement) built-in
-
-### Environment Variables
-
-```bash
-# backend/.env
-DATABASE_URL=sqlite:///./habits.db
-DEBUG=true
-CORS_ORIGINS=["http://localhost:5173"]
-
-# frontend/.env
-VITE_API_URL=/api
-```
+前端可用相对路径：`fetch('/api/habits')`
 
 ---
 
-## 2. Production Builds
+## 2. 生产构建
 
-### Frontend Build (Vite)
+### 前端构建
 
 ```bash
 cd frontend
-npm run build  # Creates dist/ folder
+npm run build  # 生成 dist/ 目录
 ```
 
-**Output:**
-```
-dist/
-├── index.html
-├── assets/
-│   ├── index-abc123.js
-│   └── index-def456.css
-```
-
-### Build Optimization
+### 构建优化
 
 ```javascript
 // vite.config.js
 export default defineConfig({
-  plugins: [react()],
   build: {
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
+          vendor: ['react', 'react-dom'],
           query: ['@tanstack/react-query'],
         },
       },
@@ -121,70 +78,27 @@ export default defineConfig({
 });
 ```
 
-### Bundle Analysis
-
-```bash
-npm install rollup-plugin-visualizer --save-dev
-```
-
-```javascript
-// vite.config.js
-import { visualizer } from 'rollup-plugin-visualizer';
-
-export default defineConfig({
-  plugins: [
-    react(),
-    visualizer({ open: true }),
-  ],
-});
-```
-
 ---
 
-## 3. Backend Deployment
+## 3. 后端部署
 
-### Uvicorn (Recommended for Most Cases)
+### Uvicorn（推荐）
 
 ```bash
-# Development
+# 开发
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-# Production (with multiple workers)
+# 生产（多 worker）
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
-**Worker count**: Number of CPU cores for async workers.
-
-### Gunicorn + Uvicorn Workers
+### Gunicorn + Uvicorn
 
 ```bash
-# Install
-pip install gunicorn uvicorn
-
-# Run
 gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000
 ```
 
-**Gunicorn config file:**
-
-```python
-# gunicorn.conf.py
-import multiprocessing
-
-bind = "0.0.0.0:8000"
-workers = multiprocessing.cpu_count()
-worker_class = "uvicorn.workers.UvicornWorker"
-timeout = 30
-keepalive = 5
-max_requests = 10000
-max_requests_jitter = 1000
-```
-
-```bash
-gunicorn app.main:app -c gunicorn.conf.py
-```
-
-### Systemd Service
+### Systemd 服务
 
 ```ini
 # /etc/systemd/system/habittracker.service
@@ -194,12 +108,9 @@ After=network.target
 
 [Service]
 User=www-data
-Group=www-data
 WorkingDirectory=/var/www/habit-tracker/backend
-Environment="PATH=/var/www/habit-tracker/backend/.venv/bin"
 ExecStart=/var/www/habit-tracker/backend/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 Restart=always
-RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
@@ -208,505 +119,227 @@ WantedBy=multi-user.target
 ```bash
 sudo systemctl enable habittracker
 sudo systemctl start habittracker
-sudo systemctl status habittracker
 ```
 
 ---
 
-## 4. Frontend Deployment
+## 4. 前端部署
 
-### Option 1: FastAPI Serves Static Files
+### 方案1：FastAPI 托管静态文件
 
 ```python
-# app/main.py
-from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse
-import os
 
-app = FastAPI()
-
-# API routes first
-@app.get("/api/habits")
-async def list_habits():
-    pass
-
-# Serve React app
-frontend_path = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
+frontend_path = "frontend/dist"
 
 @app.get("/")
 async def serve_react_app():
-    return FileResponse(os.path.join(frontend_path, "index.html"))
+    return FileResponse(f"{frontend_path}/index.html")
 
-# Handle client-side routing
 @app.exception_handler(404)
 async def custom_404_handler(request, exc):
     if not request.url.path.startswith("/api"):
-        return FileResponse(os.path.join(frontend_path, "index.html"))
+        return FileResponse(f"{frontend_path}/index.html")
     raise exc
 
-# Mount static files AFTER routes
 app.mount("/", StaticFiles(directory=frontend_path, html=True), name="static")
 ```
 
-**Benefits**: Single deployment, no CORS issues, simpler infrastructure.
-
-### Option 2: Nginx Serves Static Files
-
-Better performance for static assets:
+### 方案2：Nginx 托管
 
 ```nginx
 server {
     listen 80;
-    server_name yourdomain.com;
     root /var/www/habit-tracker/frontend/dist;
 
-    # Serve static files
     location / {
         try_files $uri $uri/ /index.html;
     }
 
-    # Proxy API to FastAPI
     location /api {
         proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
 }
 ```
 
-### Option 3: CDN/Static Hosting
-
-Deploy frontend to Vercel, Netlify, or Cloudflare Pages:
+### 方案3：CDN/静态托管
 
 ```bash
 # Vercel
-npm install -g vercel
 vercel --prod
 
 # Netlify
-npm install -g netlify-cli
 netlify deploy --prod
-```
-
-Configure API URL for separate backend:
-```javascript
-// frontend/.env.production
-VITE_API_URL=https://api.yourdomain.com
 ```
 
 ---
 
 ## 5. Docker
 
-### Dockerfile (Multi-Stage Build)
+### 后端 Dockerfile
 
 ```dockerfile
-# backend/Dockerfile
-# Stage 1: Build
 FROM python:3.11-slim AS builder
-
 WORKDIR /app
-
-# Install dependencies
 COPY requirements.txt .
 RUN pip install --user --no-cache-dir -r requirements.txt
 
-# Stage 2: Runtime
 FROM python:3.11-slim
-
 WORKDIR /app
-
-# Create non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
-
-# Copy dependencies from builder
 COPY --from=builder /root/.local /home/appuser/.local
 ENV PATH=/home/appuser/.local/bin:$PATH
-
-# Copy application
 COPY . .
-
-# Set ownership
-RUN chown -R appuser:appuser /app
-
-# Switch to non-root user
 USER appuser
-
 EXPOSE 8000
-
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-### Frontend Dockerfile
-
-```dockerfile
-# frontend/Dockerfile
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
 ```
 
 ### Docker Compose
 
 ```yaml
-# docker-compose.yml
 version: '3.8'
-
 services:
   backend:
     build: ./backend
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=sqlite:///./data/habits.db
-    volumes:
-      - ./data:/app/data  # Persist SQLite database
+    ports: ["8000:8000"]
+    volumes: ["./data:/app/data"]
     restart: unless-stopped
 
   frontend:
     build: ./frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-    restart: unless-stopped
+    ports: ["80:80"]
+    depends_on: [backend]
 ```
 
-### Docker Commands
+### 常用命令
 
 ```bash
-# Build and run
-docker-compose up --build
-
-# Run in background
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop
-docker-compose down
-
-# Rebuild single service
-docker-compose up --build backend
+docker-compose up --build      # 构建并运行
+docker-compose up -d           # 后台运行
+docker-compose logs -f         # 查看日志
+docker-compose down            # 停止
 ```
 
-### Image Optimization Tips
+### 镜像优化
 
-| Tip | Impact |
-|-----|--------|
-| Use slim base images | `python:3.11-slim` is 45MB vs 125MB |
-| Multi-stage builds | 70%+ smaller images |
-| Use `.dockerignore` | Faster builds |
-| Order layers by change frequency | Better caching |
-| Combine RUN commands | Fewer layers |
-
-**.dockerignore:**
-```
-__pycache__
-*.pyc
-.git
-.env
-.venv
-node_modules
-dist
-*.md
-```
+| 技巧 | 效果 |
+|-----|-----|
+| 用 slim 基础镜像 | 45MB vs 125MB |
+| 多阶段构建 | 减小 70%+ |
+| 用 .dockerignore | 加快构建 |
 
 ---
 
-## 6. Reverse Proxy (Nginx)
+## 6. 反向代理
 
-### Basic Configuration
+### Nginx 配置
 
 ```nginx
-# /etc/nginx/sites-available/habittracker
 server {
     listen 80;
     server_name yourdomain.com;
-
-    # Serve React static files
     root /var/www/habit-tracker/frontend/dist;
-    index index.html;
 
-    # Handle React Router (client-side routing)
     location / {
         try_files $uri $uri/ /index.html;
     }
 
-    # Proxy API requests to FastAPI
     location /api {
         proxy_pass http://127.0.0.1:8000;
-        proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # Cache static assets
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
+    location ~* \.(js|css|png|jpg|ico)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
 }
 ```
 
-### Enable Site
+### SSL (Let's Encrypt)
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/habittracker /etc/nginx/sites-enabled/
-sudo nginx -t  # Test configuration
-sudo systemctl reload nginx
-```
-
-### SSL with Let's Encrypt
-
-```bash
-# Install Certbot
 sudo apt install certbot python3-certbot-nginx
-
-# Obtain certificate
 sudo certbot --nginx -d yourdomain.com
-
-# Auto-renewal (already configured by certbot)
-sudo certbot renew --dry-run
-```
-
-**Result** (auto-generated by certbot):
-
-```nginx
-server {
-    listen 443 ssl;
-    server_name yourdomain.com;
-
-    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-
-    # ... rest of config
-}
-
-server {
-    listen 80;
-    server_name yourdomain.com;
-    return 301 https://$host$request_uri;
-}
 ```
 
 ---
 
-## 7. Environment & Configuration
-
-### 12-Factor App Principles
-
-| Factor | Application |
-|--------|-------------|
-| Config | Environment variables |
-| Dependencies | requirements.txt / package.json |
-| Processes | Stateless app |
-| Port binding | App binds to port |
-| Logs | Stream to stdout |
-| Dev/prod parity | Use Docker |
+## 7. 环境配置
 
 ### Pydantic Settings
 
 ```python
-# app/config.py
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 from functools import lru_cache
 
 class Settings(BaseSettings):
-    app_name: str = "Habit Tracker"
     database_url: str = "sqlite:///./habits.db"
     debug: bool = False
     cors_origins: list[str] = ["http://localhost:5173"]
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-    )
+    model_config = SettingsConfigDict(env_file=".env")
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
 ```
 
-### Environment Files
+### 环境文件
 
 ```bash
 # .env.development
 DATABASE_URL=sqlite:///./habits.db
 DEBUG=true
-CORS_ORIGINS=["http://localhost:5173"]
 
 # .env.production
 DATABASE_URL=sqlite:///./data/habits.db
 DEBUG=false
-CORS_ORIGINS=["https://yourdomain.com"]
 ```
-
-### Secrets Management (Production)
-
-| Environment | Solution |
-|-------------|----------|
-| Local | `.env` files (gitignored) |
-| Docker | Environment variables / secrets |
-| Cloud | Platform secrets (Railway, Fly.io) |
-| Enterprise | HashiCorp Vault, AWS Secrets Manager |
 
 ---
 
-## 8. Database in Production
+## 8. 生产数据库
 
-### SQLite Considerations
+### SQLite 适用场景
 
-**When SQLite works**:
-- Single server deployment
-- Low write concurrency
-- Database < 1TB
-- Local/personal applications
+- 单服务器部署
+- 低写入并发
+- 本地/个人应用
 
-**When to migrate to PostgreSQL**:
-- Multiple servers/load balancing
-- High write concurrency
-- Need for replication/HA
-
-### Database File Location
+### 数据库位置
 
 ```python
-# Don't store in application directory
-# BAD
-DATABASE_URL = "sqlite:///./habits.db"
-
-# GOOD - absolute path outside app
+# 不要存在应用目录
 DATABASE_URL = "sqlite:////var/data/habit-tracker/habits.db"
 ```
 
-### Docker Volume for Persistence
+### Docker 持久化
 
 ```yaml
-# docker-compose.yml
 services:
   backend:
-    volumes:
-      - db-data:/app/data
-
+    volumes: ["db-data:/app/data"]
 volumes:
   db-data:
 ```
 
-### Backup with Litestream
-
-```yaml
-# litestream.yml
-dbs:
-  - path: /data/habits.db
-    replicas:
-      - url: s3://bucket-name/habits
-        sync-interval: 1s
-        retention: 24h
-```
+### 备份
 
 ```bash
-# Run with litestream
-litestream replicate -config litestream.yml
-```
-
-### Manual Backup
-
-```bash
-# Safe backup using SQLite CLI
 sqlite3 /data/habits.db "VACUUM INTO '/backups/habits-$(date +%Y%m%d).db'"
-
-# Or using Python
-python -c "import sqlite3; src=sqlite3.connect('/data/habits.db'); dst=sqlite3.connect('/backups/backup.db'); src.backup(dst)"
 ```
-
-### Migrations with Alembic
-
-```bash
-# Generate migration
-alembic revision --autogenerate -m "Add description column"
-
-# Apply migrations
-alembic upgrade head
-
-# Rollback
-alembic downgrade -1
-```
-
-**Production deployment:**
-1. Create backup
-2. Run migrations: `alembic upgrade head`
-3. Start application
-4. Verify health checks
 
 ---
 
-## 9. Monitoring & Logging
+## 9. 监控日志
 
-### Structured Logging
-
-```python
-import logging
-import json
-
-class JSONFormatter(logging.Formatter):
-    def format(self, record):
-        log_data = {
-            "timestamp": self.formatTime(record),
-            "level": record.levelname,
-            "message": record.getMessage(),
-            "module": record.module,
-        }
-        return json.dumps(log_data)
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-handler = logging.StreamHandler()
-handler.setFormatter(JSONFormatter())
-logger.addHandler(handler)
-```
-
-### Request Logging Middleware
+### 健康检查端点
 
 ```python
-import time
-import logging
-
-logger = logging.getLogger(__name__)
-
-@app.middleware("http")
-async def log_requests(request, call_next):
-    start_time = time.time()
-    response = await call_next(request)
-    duration = time.time() - start_time
-
-    logger.info(
-        f"{request.method} {request.url.path} "
-        f"status={response.status_code} "
-        f"duration={duration:.3f}s"
-    )
-    return response
-```
-
-### Health Check Endpoints
-
-```python
-from fastapi import FastAPI, status
-from fastapi.responses import JSONResponse
-
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
@@ -717,355 +350,162 @@ async def readiness_check(db: Session = Depends(get_db)):
         db.execute(text("SELECT 1"))
         return {"status": "ready"}
     except Exception as e:
-        return JSONResponse(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            content={"status": "not ready", "error": str(e)},
-        )
+        return JSONResponse(status_code=503, content={"status": "not ready"})
 ```
 
-### Monitoring Stack (Optional)
+### 监控工具
 
-| Tool | Purpose |
-|------|---------|
-| Prometheus | Metrics collection |
-| Grafana | Visualization |
-| Sentry | Error tracking |
-| Loki | Log aggregation |
+| 工具 | 用途 |
+|-----|-----|
+| Prometheus | 指标收集 |
+| Grafana | 可视化 |
+| Sentry | 错误追踪 |
 
 ---
 
-## 10. Cloud Platforms
+## 10. 云平台
 
-### Platform Comparison
+### 平台对比
 
-| Platform | Pricing | Best For | SQLite Support |
-|----------|---------|----------|----------------|
-| **Railway** | Usage-based | Fast deploys | Limited |
-| **Render** | $7+/mo | Managed services | Limited |
-| **Fly.io** | $2+/mo | Global, SQLite | Yes (volumes) |
-| **DigitalOcean** | $4+/mo | VPS control | Yes |
-| **Hetzner** | $4+/mo | Europe, budget | Yes |
+| 平台 | 价格 | SQLite 支持 |
+|-----|-----|------------|
+| Fly.io | $2+/月 | 是（volumes）|
+| Railway | 按用量 | 有限 |
+| DigitalOcean | $4+/月 | 是 |
 
-### Fly.io Deployment
+### Fly.io 部署
 
 ```bash
-# Install flyctl
-curl -L https://fly.io/install.sh | sh
-
-# Login
 fly auth login
-
-# Launch app
 fly launch
-
-# Deploy
-fly deploy
-
-# Create volume for SQLite
 fly volumes create data --size 1
-
-# Check status
-fly status
+fly deploy
 ```
 
-**fly.toml:**
 ```toml
+# fly.toml
 app = "habit-tracker"
-
-[build]
-  dockerfile = "Dockerfile"
-
 [http_service]
   internal_port = 8000
-  force_https = true
-
 [mounts]
   source = "data"
   destination = "/data"
 ```
 
-### Railway Deployment
-
-```bash
-# Install Railway CLI
-npm install -g @railway/cli
-
-# Login
-railway login
-
-# Initialize
-railway init
-
-# Deploy
-railway up
-```
-
-### VPS Deployment Checklist
-
-1. **Server setup**
-   ```bash
-   sudo apt update && sudo apt upgrade
-   sudo apt install nginx python3-pip python3-venv
-   ```
-
-2. **Clone repository**
-   ```bash
-   git clone https://github.com/user/habit-tracker /var/www/habit-tracker
-   ```
-
-3. **Setup backend**
-   ```bash
-   cd /var/www/habit-tracker/backend
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
-
-4. **Build frontend**
-   ```bash
-   cd /var/www/habit-tracker/frontend
-   npm install && npm run build
-   ```
-
-5. **Configure systemd service**
-
-6. **Configure Nginx**
-
-7. **Setup SSL with Certbot**
-
-8. **Configure firewall**
-   ```bash
-   sudo ufw allow 80
-   sudo ufw allow 443
-   sudo ufw enable
-   ```
-
 ---
 
-## 11. Security
+## 11. 安全
 
-### CORS Configuration
+### CORS 配置
 
 ```python
-from fastapi.middleware.cors import CORSMiddleware
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,  # Specific origins only
+    allow_origins=["https://yourdomain.com"],  # 不用 "*"
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["Authorization", "Content-Type"],
 )
 ```
 
-### Security Headers (Nginx)
+### 安全头（Nginx）
 
 ```nginx
-# Add to server block
-add_header X-Frame-Options "SAMEORIGIN" always;
-add_header X-Content-Type-Options "nosniff" always;
-add_header X-XSS-Protection "1; mode=block" always;
-add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" always;
+add_header X-Frame-Options "SAMEORIGIN";
+add_header X-Content-Type-Options "nosniff";
+add_header Strict-Transport-Security "max-age=31536000";
 ```
 
-### Docker Security
+### Docker 安全
 
 ```dockerfile
-# Run as non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 USER appuser
-
-# Use specific versions
-FROM python:3.11.7-slim
-
-# Don't store secrets in image
-# Use runtime environment variables
 ```
 
-### HTTPS Everywhere
-
-- Use Let's Encrypt for free SSL certificates
-- Redirect HTTP to HTTPS
-- Enable HSTS
-
-```nginx
-add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-```
-
-### Environment Security
+### 环境安全
 
 ```bash
-# Never commit .env files
 echo ".env" >> .gitignore
-echo ".env.*" >> .gitignore
-
-# Set restrictive permissions
 chmod 600 .env
 ```
 
 ---
 
-## 12. Single Binary Deployment
+## 部署场景
 
-### PyInstaller
+### 场景1：本地使用
 
-```bash
-pip install pyinstaller
-
-# Create spec file
-pyi-makespec --onefile --name habittracker backend/app/main.py
-```
-
-**entrypoint.py:**
-```python
-import multiprocessing
-import uvicorn
-
-if __name__ == "__main__":
-    multiprocessing.freeze_support()  # Required for Windows
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000)
-```
-
-**Build:**
-```bash
-pyinstaller --onefile --add-data "frontend/dist:frontend/dist" entrypoint.py
-```
-
-### Tauri (Desktop App)
-
-For a native desktop wrapper:
-
-```bash
-# Install Tauri CLI
-cargo install tauri-cli
-
-# Initialize
-cargo tauri init
-
-# Build
-cargo tauri build
-```
-
-**Benefits**:
-- Native WebView (not bundled browser)
-- Small binary (~10-50MB)
-- Cross-platform
-
----
-
-## Deployment Scenarios
-
-### Scenario 1: Local/Personal Use
-
-```
-┌─────────────────────────────────┐
-│  uvicorn + embedded React       │
-│  SQLite file in ./data          │
-└─────────────────────────────────┘
-```
-
-**Commands:**
 ```bash
 cd backend && uvicorn app.main:app --port 8000
-# Access at http://localhost:8000
+# 访问 http://localhost:8000
 ```
 
-### Scenario 2: Self-Hosted VPS
+### 场景2：VPS 自托管
 
 ```
-┌──────────┐      ┌──────────┐      ┌──────────┐
-│  Nginx   │──────│  FastAPI │──────│  SQLite  │
-│  (SSL)   │      │ (systemd)│      │  (file)  │
-└──────────┘      └──────────┘      └──────────┘
+Nginx (SSL) → FastAPI (systemd) → SQLite
 ```
+成本：~$4-5/月
 
-**Cost**: ~$4-5/month
-
-### Scenario 3: Docker Compose
+### 场景3：Docker Compose
 
 ```
-┌──────────────────────────────────────────┐
-│  docker-compose                          │
-│  ┌────────────┐    ┌────────────┐        │
-│  │  frontend  │    │  backend   │        │
-│  │  (nginx)   │────│  (uvicorn) │        │
-│  └────────────┘    └─────┬──────┘        │
-│                          │               │
-│                    ┌─────▼──────┐        │
-│                    │   volume   │        │
-│                    │  (sqlite)  │        │
-│                    └────────────┘        │
-└──────────────────────────────────────────┘
+docker-compose
+├── frontend (nginx)
+├── backend (uvicorn)
+└── volume (sqlite)
 ```
 
-### Scenario 4: Cloud PaaS (Fly.io)
+### 场景4：云 PaaS (Fly.io)
 
 ```
-┌──────────────────────────────────────────┐
-│  Fly.io                                  │
-│  ┌────────────────────────┐              │
-│  │  Docker container      │              │
-│  │  FastAPI + React       │              │
-│  └───────────┬────────────┘              │
-│              │                           │
-│        ┌─────▼─────┐                     │
-│        │  Volume   │                     │
-│        │  (SQLite) │                     │
-│        └───────────┘                     │
-└──────────────────────────────────────────┘
+Fly.io
+├── Docker 容器
+└── Volume (SQLite)
 ```
-
-**Cost**: ~$2-5/month
+成本：~$2-5/月
 
 ---
 
-## Quick Reference
+## 快速参考
 
-### Essential Commands
+### 常用命令
 
 ```bash
-# Development
+# 开发
 uvicorn app.main:app --reload
 npm run dev
 
-# Production build
+# 构建
 npm run build
-pip install -r requirements.txt
 
 # Docker
 docker-compose up --build
-docker-compose logs -f
 
-# Deployment
+# 部署
 fly deploy
-railway up
 
 # SSL
 sudo certbot --nginx -d yourdomain.com
 
-# Database backup
+# 备份
 sqlite3 db.db "VACUUM INTO 'backup.db'"
 ```
 
-### Port Reference
+### 端口参考
 
-| Service | Default Port |
-|---------|--------------|
-| Vite dev server | 5173 |
-| FastAPI/Uvicorn | 8000 |
+| 服务 | 端口 |
+|-----|-----|
+| Vite 开发 | 5173 |
+| FastAPI | 8000 |
 | Nginx HTTP | 80 |
 | Nginx HTTPS | 443 |
-| PostgreSQL | 5432 |
 
 ---
 
-## Resources
+## 资源
 
-- [FastAPI Deployment](https://fastapi.tiangolo.com/deployment/)
-- [Vite Static Deploy](https://vitejs.dev/guide/static-deploy.html)
-- [Docker Documentation](https://docs.docker.com/)
-- [Nginx Documentation](https://nginx.org/en/docs/)
-- [Let's Encrypt](https://letsencrypt.org/)
-- [Fly.io Documentation](https://fly.io/docs/)
-- [Litestream](https://litestream.io/)
+- [FastAPI 部署](https://fastapi.tiangolo.com/deployment/)
+- [Vite 静态部署](https://vitejs.dev/guide/static-deploy.html)
+- [Docker 文档](https://docs.docker.com/)
+- [Fly.io 文档](https://fly.io/docs/)

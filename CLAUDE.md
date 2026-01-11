@@ -35,7 +35,12 @@ habit-tracker/
 │   └── e2e/                  # Playwright E2E tests
 └── .claude/
     ├── PRD.md                # Product requirements
-    └── reference/            # Best practices docs
+    ├── reference/            # Best practices docs
+    └── commands/             # Custom Claude Code commands
+        ├── commit.md         # Git commit workflow
+        ├── core_piv_loop/    # Plan-Implement-Validate loop
+        ├── github_bug_fix/   # Bug fix workflow
+        └── validation/       # Code review & validation
 ```
 
 ## Commands
@@ -82,6 +87,7 @@ Read these documents when working on specific areas:
 | `.claude/reference/react-frontend-best-practices.md` | Components, hooks, state management, forms |
 | `.claude/reference/testing-and-logging.md` | structlog setup, unit/integration/E2E testing patterns |
 | `.claude/reference/deployment-best-practices.md` | Docker, production builds, deployment |
+| `.claude/reference/claude-commands-guide.md` | Creating and using custom Claude Code commands |
 
 ## Code Conventions
 

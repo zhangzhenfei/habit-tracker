@@ -1,228 +1,98 @@
 ---
-description: Implement fix from RCA document for GitHub issue
+description: 根据 RCA 文档实现 GitHub issue 修复
 argument-hint: [github-issue-id]
-allowed-tools: Read, Write, Edit, Bash(ruff:*), Bash(mypy:*), Bash(pytest:*), Bash(npm:*), Bash(bun:*)
 ---
 
-# Implement Fix: GitHub Issue #$ARGUMENTS
+# 实现修复: GitHub Issue #$ARGUMENTS
 
-## Prerequisites
+## 前提条件
 
-**This command implements fixes for GitHub issues based on RCA documents:**
-- Working in a local Git repository with GitHub origin
-- RCA document exists at `docs/rca/issue-$ARGUMENTS.md`
-- GitHub CLI installed and authenticated (optional, for status updates)
+- 本地 Git 仓库有 GitHub origin
+- RCA 文档存在于 `docs/rca/issue-$ARGUMENTS.md`
 
-## RCA Document to Reference
+## 参考 RCA 文档
 
-Read RCA: `docs/rca/issue-$ARGUMENTS.md`
+读取：`docs/rca/issue-$ARGUMENTS.md`
 
-**Optional - View GitHub issue for context:**
-```bash
-gh issue view $ARGUMENTS
-```
+## 实现指令
 
-## Implementation Instructions
+### 1. 阅读理解 RCA
 
-### 1. Read and Understand RCA
+- 完整阅读 RCA 文档
+- 理解根因和修复策略
+- 记录要修改的文件
+- 了解测试要求
 
-- Read the ENTIRE RCA document thoroughly
-- Review the GitHub issue details (issue #$ARGUMENTS)
-- Understand the root cause
-- Review the proposed fix strategy
-- Note all files to modify
-- Review testing requirements
+### 2. 验证当前状态
 
-### 2. Verify Current State
+- 确认问题仍存在
+- 检查受影响文件的当前状态
 
-Before making changes:
-- Confirm the issue still exists
-- Check current state of affected files
-- Review any recent changes to those files
+### 3. 实现修复
 
-### 3. Implement the Fix
+按 RCA 的"修复方案"章节：
 
-Following the "Proposed Fix" section of the RCA:
+**对每个要修改的文件**：
+- 读取现有文件，理解实现
+- 按 RCA 描述实现修改
+- 保持代码风格一致
+- 必要时添加注释
 
-**For each file to modify:**
+### 4. 添加/更新测试
 
-#### a. Read the existing file
-- Understand current implementation
-- Locate the specific code mentioned in RCA
+按 RCA 的"测试要求"：
+1. 验证修复解决了问题
+2. 测试相关边界情况
+3. 确保无回归
 
-#### b. Make the fix
-- Implement the change as described in RCA
-- Follow the fix strategy exactly
-- Maintain code style and conventions
-- Add comments if the fix is non-obvious
-
-#### c. Handle related changes
-- Update any related code affected by the fix
-- Ensure consistency across the codebase
-- Update imports if needed
-
-### 4. Add/Update Tests
-
-Following the "Testing Requirements" from RCA:
-
-**Create test cases for:**
-1. Verify the fix resolves the issue
-2. Test edge cases related to the bug
-3. Ensure no regression in related functionality
-4. Test any new code paths introduced
-
-**Test file location:**
-- Follow project's test structure
-- Mirror the source file location
-- Use descriptive test names
-
-**Test implementation:**
 ```python
 def test_issue_$ARGUMENTS_fix():
-    """Test that issue #$ARGUMENTS is fixed."""
-    # Arrange - set up the scenario that caused the bug
-    # Act - execute the code that previously failed
-    # Assert - verify it now works correctly
+    """测试 issue #$ARGUMENTS 已修复"""
+    # Arrange - 设置导致 bug 的场景
+    # Act - 执行之前失败的代码
+    # Assert - 验证现在正常工作
 ```
 
-### 5. Run Validation
+### 5. 运行验证
 
-Execute validation commands from RCA:
+执行 RCA 中的验证命令。失败则修复后重试。
 
+### 6. 验证修复
+
+- 按 RCA 复现步骤验证问题已解决
+- 测试边界情况
+- 检查无副作用
+
+## 输出报告
+
+### 修复摘要
+- **Issue**: #$ARGUMENTS
+- **根因**: [一句话总结]
+
+### 修改的文件
+1. **[文件路径]** - 改动：[内容]
+
+### 添加的测试
+- ✅ 修复验证测试
+- ✅ 边界情况测试
+- ✅ 回归防护测试
+
+### 验证结果
 ```bash
-# Run linters
-[from RCA validation commands]
-
-# Run type checking
-[from RCA validation commands]
-
-# Run tests
-[from RCA validation commands]
+# 测试输出
 ```
 
-**If validation fails:**
-- Fix the issues
-- Re-run validation
-- Don't proceed until all pass
+### 准备提交
 
-### 6. Verify Fix
-
-**Manually verify:**
-- Follow reproduction steps from RCA
-- Confirm issue no longer occurs
-- Test edge cases
-- Check for unintended side effects
-
-### 7. Update Documentation
-
-If needed:
-- Update code comments
-- Update API documentation
-- Update README if user-facing
-- Add notes about the fix
-
-## Output Report
-
-### Fix Implementation Summary
-
-**GitHub Issue #$ARGUMENTS**: [Brief title]
-
-**Issue URL**: [GitHub issue URL]
-
-**Root Cause** (from RCA):
-[One-line summary of root cause]
-
-### Changes Made
-
-**Files Modified:**
-1. **[file-path]**
-   - Change: [What was changed]
-   - Lines: [Line numbers]
-
-2. **[file-path]**
-   - Change: [What was changed]
-   - Lines: [Line numbers]
-
-### Tests Added
-
-**Test Files Created/Modified:**
-1. **[test-file-path]**
-   - Test cases: [List test functions added]
-
-**Test Coverage:**
-- ✅ Fix verification test
-- ✅ Edge case tests
-- ✅ Regression prevention tests
-
-### Validation Results
-
-```bash
-# Linter output
-[Show lint results]
-
-# Type check output
-[Show type check results]
-
-# Test output
-[Show test results - all passing]
-```
-
-### Verification
-
-**Manual Testing:**
-- ✅ Followed reproduction steps - issue resolved
-- ✅ Tested edge cases - all pass
-- ✅ No new issues introduced
-- ✅ Original functionality preserved
-
-### Files Summary
-
-**Total Changes:**
-- X files modified
-- Y files created (tests)
-- Z lines added
-- W lines removed
-
-### Ready for Commit
-
-All changes complete and validated. Ready for:
 ```bash
 /commit
 ```
 
-**Suggested commit message:**
+**建议提交消息**：
 ```
-fix(scope): resolve GitHub issue #$ARGUMENTS - [brief description]
-
-[Summary of what was fixed and how]
+fix(scope): 解决 GitHub issue #$ARGUMENTS
 
 Fixes #$ARGUMENTS
 ```
 
-**Note:** Using `Fixes #$ARGUMENTS` in the commit message will automatically close the GitHub issue when merged to the default branch.
-
-### Optional: Update GitHub Issue
-
-**Add implementation comment to issue:**
-```bash
-gh issue comment $ARGUMENTS --body "Fix implemented in commit [commit-hash]. Ready for review."
-```
-
-**Update issue labels (if needed):**
-```bash
-gh issue edit $ARGUMENTS --add-label "fixed" --remove-label "bug"
-```
-
-**Close the issue (if not using auto-close via commit message):**
-```bash
-gh issue close $ARGUMENTS --comment "Fixed and merged."
-```
-
-## Notes
-
-- If the RCA document is missing or incomplete, request it be created first with `/rca $ARGUMENTS`
-- If you discover the RCA analysis was incorrect, document findings and update the RCA
-- If additional issues are found during implementation, note them for separate GitHub issues and RCAs
-- Follow project coding standards exactly
-- Ensure all validation passes before declaring complete
-- The commit message `Fixes #$ARGUMENTS` will link the commit to the GitHub issue
+**注意**：提交消息中的 `Fixes #$ARGUMENTS` 会在合并时自动关闭 issue。

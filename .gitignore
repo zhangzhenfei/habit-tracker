@@ -6,3 +6,7 @@ node_modules
 .ruff_cache
 .vscode
 __pycache__
+
+# SQLite WAL mode files
+*.db-shm
+*.db-wal
